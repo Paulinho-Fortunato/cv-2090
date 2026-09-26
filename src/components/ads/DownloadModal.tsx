@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Download, Clock, Printer, Share2, CheckCircle, Shield } from 'lucide-react';
 import { useResumeStore } from '../../lib/store';
+import { useAnalyticsStore } from '../../lib/analytics';
 import { translations } from '../../types/resume';
 
 interface DownloadModalProps {
@@ -185,6 +186,25 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+
+      // Record download in analytics
+      const { template } = useResumeStore.getState();
+      const { resumeData } = useResumeStore.getState();
+      const sectionsCount = [
+        resumeData.basics.fullName,
+        resumeData.basics.summary,
+        resumeData.experiences.length > 0,
+        resumeData.education.length > 0,
+        resumeData.projects.length > 0,
+        resumeData.skills.length > 0,
+      ].filter(Boolean).length;
+
+      useAnalyticsStore.getState().recordDownload({
+        template,
+        atsScore: atsScore,
+        hasPhoto: !!resumeData.photo,
+        sectionsCount,
+      });
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Erro ao gerar PDF. Tente usar a opção de impressão (Ctrl+P) e salvar como PDF.');

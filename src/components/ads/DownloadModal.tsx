@@ -170,7 +170,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
             {skills.length > 0 && (
               <View>
                 <Text style={styles.sectionTitle}>HABILIDADES</Text>
-                <Text style={styles.summary}>{skills.join(', ')}</Text>
+                <Text style={styles.summary}>{(skills || []).join(', ')}</Text>
               </View>
             )}
           </Page>
@@ -193,10 +193,10 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
       const sectionsCount = [
         resumeData.basics.fullName,
         resumeData.basics.summary,
-        resumeData.experiences.length > 0,
-        resumeData.education.length > 0,
-        resumeData.projects.length > 0,
-        resumeData.skills.length > 0,
+        (resumeData.experiences || []).length > 0,
+        (resumeData.education || []).length > 0,
+        (resumeData.projects || []).length > 0,
+        (resumeData.skills || []).length > 0,
       ].filter(Boolean).length;
 
       useAnalyticsStore.getState().recordDownload({

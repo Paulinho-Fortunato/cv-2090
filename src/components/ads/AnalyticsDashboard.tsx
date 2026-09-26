@@ -111,13 +111,13 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
           </div>
 
           {/* Recent Downloads */}
-          {stats.downloads.length > 0 && (
+          {(stats.downloads || []).length > 0 && (
             <div>
               <h4 className={`text-md font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 Downloads Recentes
               </h4>
               <div className="space-y-2">
-                {stats.downloads.slice(0, 10).map((download) => (
+                {(stats.downloads || []).slice(0, 10).map((download) => (
                   <div
                     key={download.id}
                     className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} p-3 rounded-lg flex items-center justify-between`}
@@ -153,7 +153,7 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
           )}
 
           {/* Empty State */}
-          {stats.downloads.length === 0 && (
+          {(!stats.downloads || stats.downloads.length === 0) && (
             <div className="text-center py-12">
               <TrendingUp className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-300'}`} />
               <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>

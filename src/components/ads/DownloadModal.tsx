@@ -67,13 +67,16 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
   const handleDownloadPDF = async () => {
     try {
       // Dynamic import para evitar problemas de inicialização
-      const { pdf, Document, Page, Text, View, StyleSheet } = await import('@react-pdf/renderer');
+      const { pdf, Document, Page, Text, View, Image, StyleSheet } = await import('@react-pdf/renderer');
       
-      const { basics, experiences, education, projects, skills } = useResumeStore.getState().resumeData;
+      const { basics, experiences, education, projects, skills, photo } = useResumeStore.getState().resumeData;
 
       const styles = StyleSheet.create({
         page: { padding: 30, fontFamily: 'Helvetica' },
         header: { backgroundColor: '#2563eb', padding: 20, marginBottom: 15 },
+        headerContent: { flexDirection: 'row' as const, alignItems: 'center' },
+        photo: { width: 60, height: 60, borderRadius: 30, marginRight: 15, borderWidth: 2, borderColor: '#ffffff' },
+        headerText: { flex: 1 },
         name: { fontSize: 22, fontWeight: 'bold', color: '#ffffff' },
         headline: { fontSize: 12, color: '#bfdbfe', marginTop: 4 },
         contactText: { fontSize: 9, color: '#dbeafe', marginRight: 15 },
@@ -96,12 +99,19 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
         <Document>
           <Page size="A4" style={styles.page}>
             <View style={styles.header}>
-              <Text style={styles.name}>{basics.fullName || 'Seu Nome'}</Text>
-              <Text style={styles.headline}>{basics.headline || ''}</Text>
-              <View style={{ flexDirection: 'row' as const, marginTop: 10 }}>
-                {basics.email && <Text style={styles.contactText}>{basics.email}</Text>}
-                {basics.phone && <Text style={styles.contactText}>{basics.phone}</Text>}
-                {basics.location && <Text style={styles.contactText}>{basics.location}</Text>}
+              <View style={styles.headerContent}>
+                {photo && (
+                  <Image src={photo} style={styles.photo} />
+                )}
+                <View style={styles.headerText}>
+                  <Text style={styles.name}>{basics.fullName || 'Seu Nome'}</Text>
+                  <Text style={styles.headline}>{basics.headline || ''}</Text>
+                  <View style={{ flexDirection: 'row' as const, marginTop: 10, flexWrap: 'wrap' as const }}>
+                    {basics.email && <Text style={styles.contactText}>{basics.email}</Text>}
+                    {basics.phone && <Text style={styles.contactText}>{basics.phone}</Text>}
+                    {basics.location && <Text style={styles.contactText}>{basics.location}</Text>}
+                  </View>
+                </View>
               </View>
             </View>
 

@@ -76,22 +76,59 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
     setTemplate(templateId);
   };
 
-  // Função para validar imagem antes de usar no PDF
+  // Função para validar e otimizar imagem antes de usar no PDF
   const validatePhoto = async (photoUrl: string): Promise<string | null> => {
     if (!photoUrl) return null;
     
     return new Promise((resolve) => {
       const img = new window.Image();
       
-      // Timeout de 3 segundos
+      // Timeout de 5 segundos
       const timeout = setTimeout(() => {
         console.warn('Timeout ao validar imagem do perfil');
         resolve(null);
-      }, 3000);
+      }, 5000);
       
       img.onload = () => {
         clearTimeout(timeout);
-        resolve(photoUrl);
+        
+        // Criar canvas para otimizar a imagem
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          resolve(photoUrl);
+          return;
+        }
+        
+        // Tamanho ideal para PDF (200x200 para boa qualidade)
+        const maxSize = 200;
+        let width = img.width;
+        let height = img.height;
+        
+        // Manter proporção
+        if (width > height) {
+          if (width > maxSize) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Desenhar imagem no canvas
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Converter para base64 com qualidade otimizada
+        const optimizedPhoto = canvas.toDataURL('image/jpeg', 0.92);
+        
+        resolve(optimizedPhoto);
       };
       
       img.onerror = () => {
@@ -116,19 +153,57 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
       const styles = StyleSheet.create({
         page: { padding: 30, fontFamily: 'Helvetica' },
-        header: { backgroundColor: '#2563eb', padding: 20, marginBottom: 15 },
+        header: { 
+          backgroundColor: '#2563eb', 
+          padding: 20, 
+          marginBottom: 15,
+          borderBottomWidth: 3,
+          borderBottomColor: '#1e40af'
+        },
         headerContent: { flexDirection: 'row' as const, alignItems: 'center' },
-        photo: { width: 60, height: 60, borderRadius: 30, marginRight: 15, borderWidth: 2, borderColor: '#ffffff' },
+        photoContainer: {
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+          marginRight: 15,
+          borderWidth: 3,
+          borderColor: 'rgba(255, 255, 255, 0.3)',
+          overflow: 'hidden' as const,
+        },
+        photo: { 
+          width: 64, 
+          height: 64, 
+          borderRadius: 32,
+        },
         headerText: { flex: 1 },
-        name: { fontSize: 22, fontWeight: 'bold', color: '#ffffff' },
-        headline: { fontSize: 12, color: '#bfdbfe', marginTop: 4 },
-        contactText: { fontSize: 9, color: '#dbeafe', marginRight: 15 },
-        sectionTitle: { fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase' as const, marginBottom: 8, marginTop: 15 },
-        summary: { fontSize: 9, color: '#374151', lineHeight: 1.5 },
-        expItem: { marginBottom: 10, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: '#bfdbfe' },
-        expPosition: { fontSize: 10, fontWeight: 'bold' as const, color: '#111827' },
-        expCompany: { fontSize: 9, color: '#2563eb' },
-        expDate: { fontSize: 8, color: '#6b7280' },
+        name: { fontSize: 24, fontWeight: 'bold', color: '#ffffff', letterSpacing: 0.5 },
+        headline: { fontSize: 13, color: '#dbeafe', marginTop: 4, fontStyle: 'italic' as const },
+        contactText: { fontSize: 10, color: '#dbeafe', marginRight: 15 },
+        sectionTitle: { 
+          fontSize: 12, 
+          fontWeight: 'bold', 
+          color: '#1e40af', 
+          textTransform: 'uppercase' as const, 
+          marginBottom: 10, 
+          marginTop: 18,
+          borderBottomWidth: 1,
+          borderBottomColor: '#bfdbfe',
+          paddingBottom: 4
+        },
+        summary: { fontSize: 10, color: '#374151', lineHeight: 1.6 },
+        expItem: { 
+          marginBottom: 12, 
+          paddingLeft: 10, 
+          borderLeftWidth: 3, 
+          borderLeftColor: '#3b82f6',
+          backgroundColor: '#f9fafb',
+          paddingVertical: 8,
+          paddingRight: 8,
+          borderRadius: 4
+        },
+        expPosition: { fontSize: 11, fontWeight: 'bold', color: '#111827' },
+        expCompany: { fontSize: 10, color: '#2563eb', fontWeight: 'medium', marginTop: 2 },
+        expDate: { fontSize: 9, color: '#6b7280', marginTop: 2, fontStyle: 'italic' as const },
       });
 
       const formatDate = (date: string) => {
@@ -144,12 +219,14 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
             <View style={styles.header}>
               <View style={styles.headerContent}>
                 {validPhoto && (
-                  <Image src={validPhoto} style={styles.photo} />
+                  <View style={styles.photoContainer}>
+                    <Image src={validPhoto} style={styles.photo} />
+                  </View>
                 )}
                 <View style={styles.headerText}>
                   <Text style={styles.name}>{basics.fullName || 'Seu Nome'}</Text>
                   <Text style={styles.headline}>{basics.headline || ''}</Text>
-                  <View style={{ flexDirection: 'row' as const, marginTop: 10, flexWrap: 'wrap' as const }}>
+                  <View style={{ flexDirection: 'row' as const, marginTop: 12, flexWrap: 'wrap' as const, gap: 12 }}>
                     {basics.email && <Text style={styles.contactText}>{basics.email}</Text>}
                     {basics.phone && <Text style={styles.contactText}>{basics.phone}</Text>}
                     {basics.location && <Text style={styles.contactText}>{basics.location}</Text>}
@@ -167,14 +244,18 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {experiences.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>EXPERIENCIA PROFISSIONAL</Text>
+                <Text style={styles.sectionTitle}>EXPERIÊNCIA PROFISSIONAL</Text>
                 {experiences.map((exp, i) => (
                   <View key={i} style={styles.expItem}>
-                    <Text style={styles.expPosition}>{exp.position}</Text>
-                    <Text style={styles.expCompany}>{exp.company}</Text>
-                    <Text style={styles.expDate}>
-                      {formatDate(exp.startDate)} - {exp.current ? 'Atual' : formatDate(exp.endDate)}
-                    </Text>
+                    <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.expPosition}>{exp.position}</Text>
+                        <Text style={styles.expCompany}>{exp.company}</Text>
+                      </View>
+                      <Text style={styles.expDate}>
+                        {formatDate(exp.startDate)} - {exp.current ? 'Atual' : formatDate(exp.endDate)}
+                      </Text>
+                    </View>
                     {exp.description && <Text style={styles.summary}>{exp.description}</Text>}
                   </View>
                 ))}
@@ -183,14 +264,18 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {education.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>FORMACAO ACADEMICA</Text>
+                <Text style={styles.sectionTitle}>FORMAÇÃO ACADÊMICA</Text>
                 {education.map((edu, i) => (
                   <View key={i} style={styles.expItem}>
-                    <Text style={styles.expPosition}>{edu.degree} {edu.field ? `- ${edu.field}` : ''}</Text>
-                    <Text style={styles.expCompany}>{edu.institution}</Text>
-                    <Text style={styles.expDate}>
-                      {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
-                    </Text>
+                    <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.expPosition}>{edu.degree} {edu.field ? `- ${edu.field}` : ''}</Text>
+                        <Text style={styles.expCompany}>{edu.institution}</Text>
+                      </View>
+                      <Text style={styles.expDate}>
+                        {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                      </Text>
+                    </View>
                   </View>
                 ))}
               </View>
@@ -198,14 +283,18 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {certifications && certifications.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>HABILITACOES PROFISSIONAIS</Text>
+                <Text style={styles.sectionTitle}>HABILITAÇÕES PROFISSIONAIS</Text>
                 {certifications.map((cert, i) => (
                   <View key={i} style={styles.expItem}>
-                    <Text style={styles.expPosition}>{cert.name}</Text>
-                    <Text style={styles.expCompany}>{cert.institution}</Text>
-                    <Text style={styles.expDate}>
-                      {formatDate(cert.date)}{cert.duration ? ` • ${cert.duration}` : ''}
-                    </Text>
+                    <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.expPosition}>{cert.name}</Text>
+                        <Text style={styles.expCompany}>{cert.institution}</Text>
+                      </View>
+                      <Text style={styles.expDate}>
+                        {formatDate(cert.date)}{cert.duration ? ` • ${cert.duration}` : ''}
+                      </Text>
+                    </View>
                     {cert.description && <Text style={styles.summary}>{cert.description}</Text>}
                   </View>
                 ))}
@@ -228,7 +317,23 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
             {skills.length > 0 && (
               <View>
                 <Text style={styles.sectionTitle}>HABILIDADES</Text>
-                <Text style={styles.summary}>{(skills || []).join(', ')}</Text>
+                <View style={{ flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: 8 }}>
+                  {(skills || []).map((skill, i) => (
+                    <View 
+                      key={i} 
+                      style={{ 
+                        backgroundColor: '#dbeafe', 
+                        paddingHorizontal: 10, 
+                        paddingVertical: 5, 
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: '#3b82f6'
+                      }}
+                    >
+                      <Text style={{ fontSize: 9, color: '#1e40af', fontWeight: 'medium' }}>{skill}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             )}
           </Page>

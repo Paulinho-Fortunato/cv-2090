@@ -1,56 +1,50 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Download, Clock, Printer, Share2, CheckCircle, Shield } from 'lucide-react';
+import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { useResumeStore } from '../../lib/store';
 import { translations } from '../../types/resume';
-
-// Lazy load the PDF renderer
-const PDFDownloadLink = lazy(() =>
-  import('@react-pdf/renderer').then((mod) => ({ default: mod.PDFDownloadLink }))
-);
-const Document = lazy(() =>
-  import('@react-pdf/renderer').then((mod) => ({ default: mod.Document }))
-);
-const Page = lazy(() =>
-  import('@react-pdf/renderer').then((mod) => ({ default: mod.Page }))
-);
-const Text = lazy(() =>
-  import('@react-pdf/renderer').then((mod) => ({ default: mod.Text }))
-);
-const View = lazy(() =>
-  import('@react-pdf/renderer').then((mod) => ({ default: mod.View }))
-);
 
 interface DownloadModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const styles = StyleSheet.create({
+  page: { padding: 30, fontFamily: 'Helvetica' },
+  header: { backgroundColor: '#2563eb', padding: 20, marginBottom: 15 },
+  name: { fontSize: 22, fontWeight: 'bold', color: '#ffffff' },
+  headline: { fontSize: 12, color: '#bfdbfe', marginTop: 4 },
+  contactRow: { flexDirection: 'row', marginTop: 10, flexWrap: 'wrap' },
+  contactText: { fontSize: 9, color: '#dbeafe', marginRight: 15 },
+  sectionTitle: { fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase', marginBottom: 8, marginTop: 15 },
+  summary: { fontSize: 9, color: '#374151', lineHeight: 1.5 },
+  expItem: { marginBottom: 10, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: '#bfdbfe' },
+  expPosition: { fontSize: 10, fontWeight: 'bold', color: '#111827' },
+  expCompany: { fontSize: 9, color: '#2563eb' },
+  expDate: { fontSize: 8, color: '#6b7280' },
+  expDescription: { fontSize: 8, color: '#4b5563', marginTop: 3 },
+  skillBadge: { backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2, marginRight: 4, marginBottom: 4 },
+  skillText: { fontSize: 8, color: '#1d4ed8' },
+});
+
 function calculateATSScore() {
-  const { basics, experiences, education, skills } = useResumeStore.getState().resumeData;
+  const { basics, experiences, education, projects, skills } = useResumeStore.getState().resumeData;
   let score = 0;
   const maxScore = 100;
 
-  // Name (15)
   if (basics.fullName.trim()) score += 15;
-  // Headline (10)
   if (basics.headline.trim()) score += 10;
-  // Email (10)
   if (basics.email.trim() && basics.email.includes('@')) score += 10;
-  // Phone (5)
   if (basics.phone.trim()) score += 5;
-  // Location (5)
   if (basics.location.trim()) score += 5;
-  // Summary (15)
   if (basics.summary.trim().length > 50) score += 15;
   else if (basics.summary.trim().length > 20) score += 8;
-  // Experience (20)
   if (experiences.length > 0) {
     score += Math.min(20, experiences.length * 7);
     if (experiences.some((e) => e.description.length > 50)) score += 5;
   }
-  // Education (10)
   if (education.length > 0) score += 10;
-  // Skills (10)
+  if (projects.length > 0) score += 5;
   if (skills.length >= 5) score += 10;
   else if (skills.length >= 3) score += 7;
   else if (skills.length > 0) score += 4;
@@ -58,112 +52,96 @@ function calculateATSScore() {
   return Math.min(score, maxScore);
 }
 
+function formatDate(date: string) {
+  if (!date) return '';
+  const [year, month] = date.split('-');
+  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  return `${months[parseInt(month) - 1]} ${year}`;
+}
+
 function ResumePDFContent() {
   const { basics, experiences, education, projects, skills } = useResumeStore.getState().resumeData;
 
-  const formatDate = (date: string) => {
-    if (!date) return '';
-    const [year, month] = date.split('-');
-    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    return `${months[parseInt(month) - 1]} ${year}`;
-  };
-
   return (
-    <Suspense fallback={<View style={{ padding: 30 }}><Text>Carregando...</Text></View>}>
-      <Document>
-        <Page size="A4" style={{ padding: 30, fontFamily: 'Helvetica' }}>
-          <View style={{ backgroundColor: '#2563eb', padding: 20, marginBottom: 15, borderRadius: 4 }}>
-            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#ffffff' }}>
-              {basics.fullName || 'Seu Nome'}
-            </Text>
-            <Text style={{ fontSize: 12, color: '#bfdbfe', marginTop: 4 }}>
-              {basics.headline || ''}
-            </Text>
-            <View style={{ flexDirection: 'row', marginTop: 10, flexWrap: 'wrap' }}>
-              {basics.email && <Text style={{ fontSize: 9, color: '#dbeafe', marginRight: 15 }}>{basics.email}</Text>}
-              {basics.phone && <Text style={{ fontSize: 9, color: '#dbeafe', marginRight: 15 }}>{basics.phone}</Text>}
-              {basics.location && <Text style={{ fontSize: 9, color: '#dbeafe', marginRight: 15 }}>{basics.location}</Text>}
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <Text style={styles.name}>{basics.fullName || 'Seu Nome'}</Text>
+          <Text style={styles.headline}>{basics.headline || ''}</Text>
+          <View style={styles.contactRow}>
+            {basics.email && <Text style={styles.contactText}>{basics.email}</Text>}
+            {basics.phone && <Text style={styles.contactText}>{basics.phone}</Text>}
+            {basics.location && <Text style={styles.contactText}>{basics.location}</Text>}
+          </View>
+        </View>
+
+        {basics.summary && (
+          <View style={{ marginBottom: 15 }}>
+            <Text style={styles.sectionTitle}>RESUMO PROFISSIONAL</Text>
+            <Text style={styles.summary}>{basics.summary}</Text>
+          </View>
+        )}
+
+        {experiences.length > 0 && (
+          <View style={{ marginBottom: 15 }}>
+            <Text style={styles.sectionTitle}>EXPERIENCIA PROFISSIONAL</Text>
+            {experiences.map((exp, i) => (
+              <View key={i} style={styles.expItem}>
+                <Text style={styles.expPosition}>{exp.position}</Text>
+                <Text style={styles.expCompany}>{exp.company}</Text>
+                <Text style={styles.expDate}>
+                  {formatDate(exp.startDate)} - {exp.current ? 'Atual' : formatDate(exp.endDate)}
+                </Text>
+                {exp.description && <Text style={styles.expDescription}>{exp.description}</Text>}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {education.length > 0 && (
+          <View style={{ marginBottom: 15 }}>
+            <Text style={styles.sectionTitle}>FORMACAO ACADEMICA</Text>
+            {education.map((edu, i) => (
+              <View key={i} style={styles.expItem}>
+                <Text style={styles.expPosition}>
+                  {edu.degree} {edu.field ? `- ${edu.field}` : ''}
+                </Text>
+                <Text style={styles.expCompany}>{edu.institution}</Text>
+                <Text style={styles.expDate}>
+                  {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {projects.length > 0 && (
+          <View style={{ marginBottom: 15 }}>
+            <Text style={styles.sectionTitle}>PROJETOS</Text>
+            {projects.map((proj, i) => (
+              <View key={i} style={styles.expItem}>
+                <Text style={styles.expPosition}>{proj.name}</Text>
+                {proj.technologies && <Text style={styles.expCompany}>{proj.technologies}</Text>}
+                {proj.description && <Text style={styles.expDescription}>{proj.description}</Text>}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {skills.length > 0 && (
+          <View>
+            <Text style={styles.sectionTitle}>HABILIDADES</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              {skills.map((skill, i) => (
+                <View key={i} style={styles.skillBadge}>
+                  <Text style={styles.skillText}>{skill}</Text>
+                </View>
+              ))}
             </View>
           </View>
-
-          {basics.summary && (
-            <View style={{ marginBottom: 15 }}>
-              <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase', marginBottom: 5 }}>
-                RESUMO PROFISSIONAL
-              </Text>
-              <Text style={{ fontSize: 9, color: '#374151', lineHeight: 1.5 }}>{basics.summary}</Text>
-            </View>
-          )}
-
-          {experiences.length > 0 && (
-            <View style={{ marginBottom: 15 }}>
-              <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase', marginBottom: 8 }}>
-                EXPERIENCIA PROFISSIONAL
-              </Text>
-              {experiences.map((exp, i) => (
-                <View key={i} style={{ marginBottom: 10, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: '#bfdbfe' }}>
-                  <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#111827' }}>{exp.position}</Text>
-                  <Text style={{ fontSize: 9, color: '#2563eb' }}>{exp.company}</Text>
-                  <Text style={{ fontSize: 8, color: '#6b7280' }}>
-                    {formatDate(exp.startDate)} - {exp.current ? 'Atual' : formatDate(exp.endDate)}
-                  </Text>
-                  {exp.description && <Text style={{ fontSize: 8, color: '#4b5563', marginTop: 3 }}>{exp.description}</Text>}
-                </View>
-              ))}
-            </View>
-          )}
-
-          {education.length > 0 && (
-            <View style={{ marginBottom: 15 }}>
-              <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase', marginBottom: 8 }}>
-                FORMACAO ACADEMICA
-              </Text>
-              {education.map((edu, i) => (
-                <View key={i} style={{ marginBottom: 8, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: '#bfdbfe' }}>
-                  <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#111827' }}>
-                    {edu.degree} {edu.field ? `- ${edu.field}` : ''}
-                  </Text>
-                  <Text style={{ fontSize: 9, color: '#2563eb' }}>{edu.institution}</Text>
-                  <Text style={{ fontSize: 8, color: '#6b7280' }}>
-                    {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {projects.length > 0 && (
-            <View style={{ marginBottom: 15 }}>
-              <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase', marginBottom: 8 }}>
-                PROJETOS
-              </Text>
-              {projects.map((proj, i) => (
-                <View key={i} style={{ marginBottom: 8, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: '#bfdbfe' }}>
-                  <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#111827' }}>{proj.name}</Text>
-                  {proj.technologies && <Text style={{ fontSize: 8, color: '#2563eb' }}>{proj.technologies}</Text>}
-                  {proj.description && <Text style={{ fontSize: 8, color: '#4b5563', marginTop: 2 }}>{proj.description}</Text>}
-                </View>
-              ))}
-            </View>
-          )}
-
-          {skills.length > 0 && (
-            <View>
-              <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase', marginBottom: 8 }}>
-                HABILIDADES
-              </Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                {skills.map((skill: string, i: number) => (
-                  <View key={i} style={{ backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2, marginRight: 4, marginBottom: 4 }}>
-                    <Text style={{ fontSize: 8, color: '#1d4ed8' }}>{skill}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-        </Page>
-      </Document>
-    </Suspense>
+        )}
+      </Page>
+    </Document>
   );
 }
 
@@ -277,16 +255,18 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                <Suspense fallback={<div className="text-center py-4 text-gray-500">Carregando PDF...</div>}>
-                  <PDFDownloadLink
-                    document={<ResumePDFContent />}
-                    fileName="curriculo.pdf"
-                    className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    <Download className="w-5 h-5" />
-                    {t.downloadPdf}
-                  </PDFDownloadLink>
-                </Suspense>
+                <PDFDownloadLink
+                  document={<ResumePDFContent />}
+                  fileName="curriculo.pdf"
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  {({ loading }) => (
+                    <>
+                      <Download className="w-5 h-5" />
+                      {loading ? 'Preparando PDF...' : t.downloadPdf}
+                    </>
+                  )}
+                </PDFDownloadLink>
 
                 <div className="flex gap-2">
                   <button

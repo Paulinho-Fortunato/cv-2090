@@ -204,6 +204,7 @@ export function LandingPage() {
               <a 
                 href="#como-funciona"
                 className="text-gray-700 px-8 py-4 rounded-xl border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all text-lg font-semibold"
+                onClick={(e) => { e.preventDefault(); document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' }); }}
               >
                 Ver Como Funciona
               </a>

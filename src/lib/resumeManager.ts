@@ -5,7 +5,7 @@ import { ResumeData, defaultResumeData } from '../types/resume';
 export interface SavedResume {
   id: string;
   name: string;
-   ResumeData;
+  data: ResumeData;
   createdAt: string;
   updatedAt: string;
   isDefault: boolean;
@@ -34,7 +34,7 @@ export const useResumeManager = create<ResumeManagerStore>()(
         {
           id: 'default',
           name: 'Meu Primeiro Currículo',
-           defaultResumeData,
+          data: defaultResumeData,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           isDefault: true,
@@ -47,7 +47,7 @@ export const useResumeManager = create<ResumeManagerStore>()(
         const newResume: SavedResume = {
           id,
           name,
-           defaultResumeData,
+          data: defaultResumeData,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           isDefault: false,
@@ -104,7 +104,7 @@ export const useResumeManager = create<ResumeManagerStore>()(
         const duplicatedResume: SavedResume = {
           id: newId,
           name: `${resumeToDuplicate.name} (Cópia)`,
-           copiedData,
+          data: copiedData,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           isDefault: false,

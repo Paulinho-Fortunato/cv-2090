@@ -3,6 +3,7 @@ import { Briefcase, Plus, Trash2, Building2, Calendar, GripVertical, ChevronUp, 
 import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
 import { useResumeExperiences, useLanguage, useTheme } from '../../../hooks/useResume';
+import { DraggableList } from '../../ui/DraggableList';
 
 export function ExperienceForm() {
   const experiences = useResumeExperiences();
@@ -30,7 +31,7 @@ export function ExperienceForm() {
   }, [reorderExperiences, experiences.length]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="experience-form">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Briefcase className="w-5 h-5 text-blue-600" />
@@ -53,41 +54,37 @@ export function ExperienceForm() {
         </div>
       )}
 
-      {experiences.map((exp, index) => (
-        <div
-          key={exp.id}
-          className={`border rounded-lg p-4 space-y-4 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <GripVertical className={`w-4 h-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
-              <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                #{index + 1}
-              </span>
+      <DraggableList
+        items={experiences}
+        onReorder={(newItems) => {
+          // Atualizar a ordem no store
+          newItems.forEach((item, index) => {
+            const originalIndex = experiences.findIndex(e => e.id === item.id);
+            if (originalIndex !== index) {
+              reorderExperiences(originalIndex, index);
+            }
+          });
+        }}
+        renderItem={(exp, index) => (
+          <div
+            key={exp.id}
+            className={`border rounded-lg p-4 space-y-4 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  #{index + 1}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => removeExperience(exp.id)}
+                  className="text-red-500 hover:text-red-700 p-1"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => handleMoveUp(index)}
-                disabled={index === 0}
-                className={`p-1 rounded ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'} disabled:opacity-30`}
-              >
-                <ChevronUp className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleMoveDown(index)}
-                disabled={index === experiences.length - 1}
-                className={`p-1 rounded ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'} disabled:opacity-30`}
-              >
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => removeExperience(exp.id)}
-                className="text-red-500 hover:text-red-700 p-1"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -169,7 +166,8 @@ export function ExperienceForm() {
             </div>
           </div>
         </div>
-      ))}
+        )}
+      />
     </div>
   );
 }

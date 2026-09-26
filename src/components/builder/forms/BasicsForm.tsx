@@ -87,7 +87,7 @@ export function BasicsForm() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="basics-form">
       <div className="flex items-center gap-3 mb-6">
         <User className="w-5 h-5 text-blue-600" />
         <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.basics}</h2>

@@ -35,7 +35,7 @@ export function SkillsForm() {
   const availableSuggestions = suggestions.filter((s) => !skills.includes(s));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="skills-form">
       <div className="flex items-center gap-3 mb-6">
         <Award className="w-5 h-5 text-blue-600" />
         <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.skillsLabel}</h2>

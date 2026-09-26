@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, Download, Clock, Printer, Share2, CheckCircle, Shield } from 'lucide-react';
+import { X, Download, Clock, Printer, Share2, CheckCircle, Shield, Eye } from 'lucide-react';
 import { useResumeStore } from '../../lib/store';
 import { useAnalyticsStore } from '../../lib/analytics';
 import { translations } from '../../types/resume';
+import { TemplateSelector } from './TemplateSelector';
+import { TemplateId } from '../../types/resume';
 
 interface DownloadModalProps {
   isOpen: boolean;
@@ -43,8 +45,12 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
   const [countdown, setCountdown] = useState(5);
   const [canDownload, setCanDownload] = useState(false);
   const [showShareLink, setShowShareLink] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const language = useResumeStore((state) => state.language);
+  const theme = useResumeStore((state) => state.theme);
+  const setTemplate = useResumeStore((state) => state.setTemplate);
   const t = translations[language];
+  const isDark = theme === 'dark';
 
   const atsScore = isOpen ? calculateATSScore() : 0;
 
@@ -52,6 +58,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
     setCountdown(5);
     setCanDownload(false);
     setShowShareLink(false);
+    setShowPreview(false);
   }, []);
 
   useEffect(() => {
@@ -64,6 +71,10 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
     }, 1000);
     return () => clearInterval(timer);
   }, [isOpen, resetModal]);
+
+  const handleTemplateSelect = (templateId: TemplateId) => {
+    setTemplate(templateId);
+  };
 
   // Função para validar imagem antes de usar no PDF
   const validatePhoto = async (photoUrl: string): Promise<string | null> => {
@@ -254,7 +265,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Erro ao gerar PDF. Tente usar a opção de impressão (Ctrl+P) e salvar como PDF.');
+      alert('Erro ao gerar PDF: ' + (error as Error).message + '\nTente novamente ou use a opção de impressão (Ctrl+P).');
     }
   };
 
@@ -316,28 +327,31 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`flex items-center justify-between p-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+          <h3 className={`text-lg font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             <Download className="w-5 h-5 text-blue-600" />
             {t.downloadPdf}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className={`text-lg font-bold ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}>
+            ×
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 space-y-6">
+          {/* Template Selector */}
+          <TemplateSelector onSelect={handleTemplateSelect} />
+
           {/* ATS Score */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+          <div className={`${isDark ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-4 border ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-gray-700">{t.atsScore}</span>
+                <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t.atsScore}</span>
               </div>
               <span className={`text-lg font-bold ${getScoreColor(atsScore)}`}>{atsScore}/100</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className={`w-full ${isDark ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2`}>
               <div
                 className={`h-2 rounded-full transition-all duration-500 ${
                   atsScore >= 80 ? 'bg-green-500' : atsScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
@@ -345,12 +359,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
                 style={{ width: `${atsScore}%` }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">{getScoreLabel(atsScore)}</p>
-          </div>
-
-          {/* Ad Space */}
-          <div className="bg-gray-100 border border-dashed border-gray-300 rounded-lg h-[200px] flex items-center justify-center mb-4">
-            <span className="text-sm text-gray-400">Espaço Publicitário (336x280)</span>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{getScoreLabel(atsScore)}</p>
           </div>
 
           {/* Actions */}
@@ -359,9 +368,9 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
               <div className="text-center py-4">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Clock className="w-5 h-5 text-blue-600 animate-pulse" />
-                  <span className="text-sm text-gray-600">Aguarde {countdown} segundos...</span>
+                  <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Aguarde {countdown} segundos...</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className={`w-full ${isDark ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2`}>
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-1000"
                     style={{ width: `${((5 - countdown) / 5) * 100}%` }}
@@ -381,14 +390,22 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
                 <div className="flex gap-2">
                   <button
                     onClick={handlePrint}
-                    className="flex-1 flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                    className={`flex-1 flex items-center justify-center gap-2 border py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+                      isDark
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
                   >
                     <Printer className="w-4 h-4" />
                     {t.print}
                   </button>
                   <button
                     onClick={handleShare}
-                    className="flex-1 flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                    className={`flex-1 flex items-center justify-center gap-2 border py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+                      isDark
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
                   >
                     {showShareLink ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4" />}
                     {showShareLink ? t.copied : t.share}

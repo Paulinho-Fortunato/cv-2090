@@ -8,6 +8,7 @@ import { CertificationsForm } from '../components/builder/forms/CertificationsFo
 import { ProjectsForm } from '../components/builder/forms/ProjectsForm';
 import { SkillsForm } from '../components/builder/forms/SkillsForm';
 import { DownloadModal } from '../components/ads/DownloadModal';
+import { MobileToolbar } from '../components/builder/MobileToolbar';
 import { useResumeStore } from '../lib/store';
 import { Eye, EyeOff, FileText, Globe, Layout } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -184,37 +185,8 @@ function BuilderContent() {
         )}
       </div>
 
-      {/* Mobile bottom nav */}
-      <div className={`lg:hidden fixed bottom-0 left-0 right-0 border-t z-30 px-2 py-2 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-        <div className="flex items-center justify-around gap-1">
-          {[
-            { id: 'basics', label: t.basics },
-            { id: 'experience', label: t.experience },
-            { id: 'education', label: t.education },
-            { id: 'certifications', label: t.certifications },
-            { id: 'projects', label: t.projectsSection },
-            { id: 'skills', label: t.skillsSection },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveSection(tab.id)}
-              className={`flex-1 px-1 py-2 rounded-lg text-xs font-medium transition-colors ${
-                activeSection === tab.id
-                  ? isDark ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-50 text-blue-700'
-                  : isDark ? 'text-gray-400' : 'text-gray-600'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-          <button
-            onClick={handleDownload}
-            className="flex-1 px-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-medium"
-          >
-            PDF
-          </button>
-        </div>
-      </div>
+      {/* Mobile Toolbar com Glassmorphism */}
+      <MobileToolbar onDownload={handleDownload} />
 
       <DownloadModal isOpen={showDownloadModal} onClose={handleCloseModal} />
     </div>

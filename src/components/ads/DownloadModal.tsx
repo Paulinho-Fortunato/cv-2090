@@ -147,64 +147,99 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
       const { pdf, Document, Page, Text, View, Image, StyleSheet } = await import('@react-pdf/renderer');
       
       const { basics, experiences, education, certifications, projects, skills, photo } = useResumeStore.getState().resumeData;
+      const currentTemplate = useResumeStore.getState().template;
       
       // Validar foto antes de usar
       const validPhoto = await validatePhoto(photo);
 
-      const styles = StyleSheet.create({
-        page: { padding: 30, fontFamily: 'Helvetica' },
-        header: { 
-          backgroundColor: '#2563eb', 
-          padding: 20, 
-          marginBottom: 15,
-          borderBottomWidth: 3,
-          borderBottomColor: '#1e40af'
-        },
-        headerContent: { flexDirection: 'row' as const, alignItems: 'center' },
-        photoContainer: {
-          width: 64,
-          height: 64,
-          borderRadius: 32,
-          marginRight: 15,
-          borderWidth: 3,
-          borderColor: 'rgba(255, 255, 255, 0.3)',
-          overflow: 'hidden' as const,
-        },
-        photo: { 
-          width: 64, 
-          height: 64, 
-          borderRadius: 32,
-        },
-        headerText: { flex: 1 },
-        name: { fontSize: 24, fontWeight: 'bold', color: '#ffffff', letterSpacing: 0.5 },
-        headline: { fontSize: 13, color: '#dbeafe', marginTop: 4, fontStyle: 'italic' as const },
-        contactText: { fontSize: 10, color: '#dbeafe', marginRight: 15 },
-        sectionTitle: { 
-          fontSize: 12, 
-          fontWeight: 'bold', 
-          color: '#1e40af', 
-          textTransform: 'uppercase' as const, 
-          marginBottom: 10, 
-          marginTop: 18,
-          borderBottomWidth: 1,
-          borderBottomColor: '#bfdbfe',
-          paddingBottom: 4
-        },
-        summary: { fontSize: 10, color: '#374151', lineHeight: 1.6 },
-        expItem: { 
-          marginBottom: 12, 
-          paddingLeft: 10, 
-          borderLeftWidth: 3, 
-          borderLeftColor: '#3b82f6',
-          backgroundColor: '#f9fafb',
-          paddingVertical: 8,
-          paddingRight: 8,
-          borderRadius: 4
-        },
-        expPosition: { fontSize: 11, fontWeight: 'bold', color: '#111827' },
-        expCompany: { fontSize: 10, color: '#2563eb', fontWeight: 'medium', marginTop: 2 },
-        expDate: { fontSize: 9, color: '#6b7280', marginTop: 2, fontStyle: 'italic' as const },
-      });
+      // Estilos baseados no template selecionado
+      const getStylesForTemplate = (template: string) => {
+        const commonStyles = {
+          page: { padding: 30, fontFamily: 'Helvetica' },
+          headerContent: { flexDirection: 'row' as const, alignItems: 'center' },
+          photo: { width: 64, height: 64, borderRadius: 32 },
+          headerText: { flex: 1 },
+          summary: { fontSize: 10, color: '#374151', lineHeight: 1.6 },
+          expPosition: { fontSize: 11, fontWeight: 'bold' as const, color: '#111827' },
+          expDate: { fontSize: 9, color: '#6b7280', marginTop: 2 },
+        };
+
+        switch (template) {
+          case 'executive':
+            return {
+              ...commonStyles,
+              header: { padding: 20, marginBottom: 15, borderBottomWidth: 2, borderBottomColor: '#000000' },
+              photoContainer: { width: 64, height: 64, borderRadius: 32, marginRight: 15, borderWidth: 3, borderColor: '#000000', overflow: 'hidden' as const },
+              name: { fontSize: 26, fontWeight: 'bold' as const, color: '#000000', letterSpacing: 1 },
+              headline: { fontSize: 14, color: '#333333', marginTop: 4 },
+              contactText: { fontSize: 10, color: '#333333', marginRight: 15 },
+              sectionTitle: { fontSize: 12, fontWeight: 'bold' as const, color: '#000000', textTransform: 'uppercase' as const, marginBottom: 10, marginTop: 18, borderBottomWidth: 1, borderBottomColor: '#000000', paddingBottom: 4 },
+              expItem: { marginBottom: 12, paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: '#000000', backgroundColor: '#ffffff', paddingVertical: 8, paddingRight: 8, borderRadius: 4 },
+              expCompany: { fontSize: 10, color: '#333333', fontWeight: 'medium' as const, marginTop: 2 },
+            };
+
+          case 'tech':
+            return {
+              ...commonStyles,
+              header: { backgroundColor: '#1f2937', padding: 20, marginBottom: 15 },
+              photoContainer: { width: 64, height: 64, borderRadius: 32, marginRight: 15, borderWidth: 3, borderColor: '#10b981', overflow: 'hidden' as const },
+              name: { fontSize: 24, fontWeight: 'bold' as const, color: '#10b981', letterSpacing: 0.5 },
+              headline: { fontSize: 12, color: '#9ca3af', marginTop: 4 },
+              contactText: { fontSize: 10, color: '#9ca3af', marginRight: 15 },
+              sectionTitle: { fontSize: 12, fontWeight: 'bold' as const, color: '#10b981', marginBottom: 10, marginTop: 18 },
+              expItem: { marginBottom: 12, paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: '#10b981', backgroundColor: '#f3f4f6', paddingVertical: 8, paddingRight: 8, borderRadius: 4 },
+              expCompany: { fontSize: 10, color: '#10b981', fontWeight: 'medium' as const, marginTop: 2 },
+            };
+
+          case 'compact':
+            return {
+              page: { padding: 20, fontFamily: 'Helvetica' },
+              headerContent: { flexDirection: 'row' as const, alignItems: 'center' },
+              header: { backgroundColor: '#6b7280', padding: 15, marginBottom: 10 },
+              photoContainer: { width: 48, height: 48, borderRadius: 24, marginRight: 10, borderWidth: 2, borderColor: '#ffffff', overflow: 'hidden' as const },
+              photo: { width: 48, height: 48, borderRadius: 24 },
+              headerText: { flex: 1 },
+              name: { fontSize: 18, fontWeight: 'bold' as const, color: '#ffffff', letterSpacing: 0.5 },
+              headline: { fontSize: 10, color: '#e5e7eb', marginTop: 2 },
+              contactText: { fontSize: 8, color: '#e5e7eb', marginRight: 10 },
+              sectionTitle: { fontSize: 10, fontWeight: 'bold' as const, color: '#374151', textTransform: 'uppercase' as const, marginBottom: 6, marginTop: 12 },
+              summary: { fontSize: 8, color: '#374151', lineHeight: 1.4 },
+              expItem: { marginBottom: 8, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: '#6b7280', paddingVertical: 4, paddingRight: 6 },
+              expPosition: { fontSize: 9, fontWeight: 'bold' as const, color: '#111827' },
+              expCompany: { fontSize: 8, color: '#6b7280', marginTop: 1 },
+              expDate: { fontSize: 7, color: '#9ca3af', marginTop: 1 },
+            };
+
+          case 'creative':
+            return {
+              ...commonStyles,
+              header: { backgroundColor: '#ec4899', padding: 20, marginBottom: 15 },
+              photoContainer: { width: 64, height: 64, borderRadius: 32, marginRight: 15, borderWidth: 3, borderColor: '#ffffff', overflow: 'hidden' as const },
+              name: { fontSize: 26, fontWeight: 'bold' as const, color: '#ffffff', letterSpacing: 0.5 },
+              headline: { fontSize: 13, color: '#fce7f3', marginTop: 4 },
+              contactText: { fontSize: 10, color: '#fce7f3', marginRight: 15 },
+              sectionTitle: { fontSize: 12, fontWeight: 'bold' as const, color: '#ec4899', textTransform: 'uppercase' as const, marginBottom: 10, marginTop: 18, borderBottomWidth: 2, borderBottomColor: '#ec4899', paddingBottom: 4 },
+              expItem: { marginBottom: 12, paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: '#ec4899', backgroundColor: '#fdf2f8', paddingVertical: 8, paddingRight: 8, borderRadius: 4 },
+              expCompany: { fontSize: 10, color: '#ec4899', fontWeight: 'medium' as const, marginTop: 2 },
+            };
+
+          case 'modern':
+          default:
+            return {
+              ...commonStyles,
+              header: { backgroundColor: '#2563eb', padding: 20, marginBottom: 15, borderBottomWidth: 3, borderBottomColor: '#1e40af' },
+              photoContainer: { width: 64, height: 64, borderRadius: 32, marginRight: 15, borderWidth: 3, borderColor: '#ffffff', overflow: 'hidden' as const },
+              name: { fontSize: 24, fontWeight: 'bold' as const, color: '#ffffff', letterSpacing: 0.5 },
+              headline: { fontSize: 13, color: '#dbeafe', marginTop: 4 },
+              contactText: { fontSize: 10, color: '#dbeafe', marginRight: 15 },
+              sectionTitle: { fontSize: 12, fontWeight: 'bold' as const, color: '#1e40af', textTransform: 'uppercase' as const, marginBottom: 10, marginTop: 18, borderBottomWidth: 1, borderBottomColor: '#bfdbfe', paddingBottom: 4 },
+              expItem: { marginBottom: 12, paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: '#3b82f6', backgroundColor: '#f9fafb', paddingVertical: 8, paddingRight: 8, borderRadius: 4 },
+              expCompany: { fontSize: 10, color: '#2563eb', fontWeight: 'medium' as const, marginTop: 2 },
+            };
+        }
+      };
+
+      const styles = StyleSheet.create(getStylesForTemplate(currentTemplate) as any);
 
       const formatDate = (date: string) => {
         if (!date) return '';

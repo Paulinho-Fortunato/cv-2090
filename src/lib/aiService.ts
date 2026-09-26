@@ -1,8 +1,22 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ResumeData } from '../types/resume';
 
-// API Key gratuita do Google Gemini - Usuário pode obter em: https://makersuite.google.com/app/apikey
-const DEFAULT_API_KEY = ''; // Usuário deve configurar sua própria chave
+// OpenRouter API - https://openrouter.ai/
+// Oferece acesso a múltiplos modelos: GPT-4, Claude, Llama, Mistral, etc.
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+// Modelos disponíveis na OpenRouter
+export const AVAILABLE_MODELS = [
+  { id: 'openai/gpt-3.5-turbo', name: 'GPT-3.5 Turbo', provider: 'OpenAI', free: false },
+  { id: 'openai/gpt-4', name: 'GPT-4', provider: 'OpenAI', free: false },
+  { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', provider: 'OpenAI', free: false },
+  { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', provider: 'Anthropic', free: false },
+  { id: 'anthropic/claude-3-sonnet', name: 'Claude 3 Sonnet', provider: 'Anthropic', free: false },
+  { id: 'meta-llama/llama-3-8b-instruct', name: 'Llama 3 8B', provider: 'Meta', free: true },
+  { id: 'meta-llama/llama-3-70b-instruct', name: 'Llama 3 70B', provider: 'Meta', free: false },
+  { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B', provider: 'Mistral', free: true },
+  { id: 'mistralai/mixtral-8x7b-instruct', name: 'Mixtral 8x7B', provider: 'Mistral', free: false },
+  { id: 'google/gemini-pro', name: 'Gemini Pro', provider: 'Google', free: false },
+];
 
 export interface AISuggestion {
   type: 'summary' | 'experience' | 'skills' | 'improvement';
@@ -18,45 +32,84 @@ export interface CoverLetter {
 }
 
 class AIService {
-  private genAI: GoogleGenerativeAI | null = null;
-  private apiKey: string = DEFAULT_API_KEY;
+  private apiKey: string = '';
+  private model: string = 'meta-llama/llama-3-8b-instruct'; // Modelo gratuito padrão
 
   constructor() {
-    this.initializeAI();
+    this.loadConfig();
   }
 
-  private initializeAI() {
-    const storedKey = localStorage.getItem('gemini-api-key');
-    const keyToUse = storedKey || this.apiKey;
+  private loadConfig() {
+    const storedKey = localStorage.getItem('openrouter-api-key');
+    const storedModel = localStorage.getItem('openrouter-model');
     
-    if (keyToUse) {
-      this.genAI = new GoogleGenerativeAI(keyToUse);
+    if (storedKey) {
+      this.apiKey = storedKey;
+    }
+    if (storedModel) {
+      this.model = storedModel;
     }
   }
 
   setApiKey(key: string) {
     this.apiKey = key;
-    localStorage.setItem('gemini-api-key', key);
-    this.initializeAI();
+    localStorage.setItem('openrouter-api-key', key);
   }
 
   getApiKey(): string {
     return this.apiKey;
   }
 
+  setModel(modelId: string) {
+    this.model = modelId;
+    localStorage.setItem('openrouter-model', modelId);
+  }
+
+  getModel(): string {
+    return this.model;
+  }
+
   isConfigured(): boolean {
-    return this.genAI !== null;
+    return this.apiKey.length > 0;
+  }
+
+  private async makeRequest(messages: any[]): Promise<string> {
+    if (!this.isConfigured()) {
+      throw new Error('API Key não configurada');
+    }
+
+    const response = await fetch(OPENROUTER_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'CV Builder',
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages,
+        temperature: 0.7,
+        max_tokens: 1000,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Erro na API');
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || '';
   }
 
   // Gera sugestões de melhoria para o currículo
   async analyzeResume(resumeData: ResumeData): Promise<AISuggestion[]> {
-    if (!this.genAI) {
+    if (!this.isConfigured()) {
       return this.getFallbackSuggestions(resumeData);
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
-
       const prompt = `Analise este currículo e forneça sugestões de melhoria em formato JSON:
 
 Nome: ${resumeData.basics.fullName}
@@ -74,14 +127,17 @@ Forneça 3-5 sugestões específicas e acionáveis em JSON:
     "content": "Sugestão detalhada",
     "confidence": 0.85
   }
-]`;
+]
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+Responda APENAS com o JSON, sem texto adicional.`;
+
+      const response = await this.makeRequest([
+        { role: 'system', content: 'Você é um especialista em currículos e carreiras. Responda apenas em JSON quando solicitado.' },
+        { role: 'user', content: prompt }
+      ]);
 
       // Extrair JSON da resposta
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      const jsonMatch = response.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0]);
       }
@@ -95,23 +151,22 @@ Forneça 3-5 sugestões específicas e acionáveis em JSON:
 
   // Gera resumo profissional baseado nos dados
   async generateSummary(resumeData: ResumeData): Promise<string> {
-    if (!this.genAI) {
+    if (!this.isConfigured()) {
       return this.getFallbackSummary(resumeData);
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
-
       const prompt = `Crie um resumo profissional conciso (3-4 linhas) para:
 Cargo: ${resumeData.basics.headline}
 Experiências: ${resumeData.experiences.map(e => `${e.position} na ${e.company}`).join(', ')}
 Skills: ${resumeData.skills.slice(0, 10).join(', ')}
 
-O resumo deve ser profissional, direto e destacar os pontos fortes.`;
+O resumo deve ser profissional, direto e destacar os pontos fortes. Responda apenas com o resumo.`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim();
+      return await this.makeRequest([
+        { role: 'system', content: 'Você é um especialista em escrita de currículos profissionais.' },
+        { role: 'user', content: prompt }
+      ]);
     } catch (error) {
       console.error('Erro ao gerar resumo:', error);
       return this.getFallbackSummary(resumeData);
@@ -124,14 +179,18 @@ O resumo deve ser profissional, direto e destacar os pontos fortes.`;
     jobDescription: string,
     tone: 'formal' | 'casual' | 'enthusiastic' = 'formal'
   ): Promise<CoverLetter> {
-    if (!this.genAI) {
+    if (!this.isConfigured()) {
       return this.getFallbackCoverLetter(resumeData, jobDescription, tone);
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const toneDescription = {
+        formal: 'formal e profissional',
+        casual: 'casual e amigável',
+        enthusiastic: 'entusiasta e motivado'
+      }[tone];
 
-      const prompt = `Crie uma carta de apresentação ${tone} em português para:
+      const prompt = `Crie uma carta de apresentação ${toneDescription} em português para:
 
 Candidato: ${resumeData.basics.fullName}
 Cargo Desejado: ${resumeData.basics.headline}
@@ -144,15 +203,17 @@ ${jobDescription}
 A carta deve:
 - Ter 3-4 parágrafos
 - Conectar as experiências do candidato com os requisitos da vaga
-- Ser ${tone}
-- Ter entre 250-350 palavras`;
+- Ser ${toneDescription}
+- Ter entre 250-350 palavras
+- Ser persuasiva e profissional`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const content = response.text().trim();
+      const content = await this.makeRequest([
+        { role: 'system', content: 'Você é um especialista em escrita de cartas de apresentação profissionais.' },
+        { role: 'user', content: prompt }
+      ]);
 
       return {
-        content,
+        content: content.trim(),
         tone,
         wordCount: content.split(/\s+/).length,
       };
@@ -168,13 +229,11 @@ A carta deve:
     company: string,
     currentDescription: string
   ): Promise<string> {
-    if (!this.genAI) {
+    if (!this.isConfigured()) {
       return currentDescription;
     }
 
     try {
-      const model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
-
       const prompt = `Melhore esta descrição de experiência profissional, tornando-a mais impactante e orientada a resultados:
 
 Cargo: ${position}
@@ -183,9 +242,10 @@ Descrição Atual: ${currentDescription}
 
 Forneça apenas a descrição melhorada, sem explicações adicionais.`;
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().trim();
+      return await this.makeRequest([
+        { role: 'system', content: 'Você é um especialista em otimização de currículos profissionais.' },
+        { role: 'user', content: prompt }
+      ]);
     } catch (error) {
       console.error('Erro ao melhorar descrição:', error);
       return currentDescription;

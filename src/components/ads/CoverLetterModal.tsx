@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { FileText, X, Loader2, Download, Copy, Check } from 'lucide-react';
-import { aiService, CoverLetter } from '../../lib/aiService';
+import { FileText, X, Loader2, Download, Copy, Check, Bot } from 'lucide-react';
+import { aiService, CoverLetter, AVAILABLE_MODELS } from '../../lib/aiService';
 import { useResumeStore } from '../../lib/store';
 
 interface CoverLetterModalProps {
@@ -14,6 +14,7 @@ export function CoverLetterModal({ isOpen, onClose }: CoverLetterModalProps) {
   const [coverLetter, setCoverLetter] = useState<CoverLetter | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(aiService.getModel());
   const resumeData = useResumeStore((state) => state.resumeData);
   const theme = useResumeStore((state) => state.theme);
   const isDark = theme === 'dark';
@@ -147,6 +148,34 @@ export function CoverLetterModal({ isOpen, onClose }: CoverLetterModalProps) {
                   </button>
                 </div>
               </div>
+
+              {/* Model Selection */}
+              {aiService.isConfigured() && (
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <div className="flex items-center gap-2">
+                      <Bot className="w-4 h-4" />
+                      Modelo de IA
+                    </div>
+                  </label>
+                  <select
+                    value={selectedModel}
+                    onChange={(e) => {
+                      setSelectedModel(e.target.value);
+                      aiService.setModel(e.target.value);
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      isDark ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'
+                    }`}
+                  >
+                    {AVAILABLE_MODELS.map((model) => (
+                      <option key={model.id} value={model.id}>
+                        {model.name} ({model.provider}) {model.free ? '- GRÁTIS' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Generate Button */}
               <button

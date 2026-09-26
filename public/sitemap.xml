@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- Página Principal -->
+  <url>
+    <loc>https://cv-2090.vercel.app</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://cv-2090.vercel.app" />
+    <xhtml:link rel="alternate" hreflang="pt" href="https://cv-2090.vercel.app?lang=pt" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://cv-2090.vercel.app?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://cv-2090.vercel.app?lang=en" />
+  </url>
+
+  <!-- Funcionalidades Principais -->
+  <url>
+    <loc>https://cv-2090.vercel.app#features</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://cv-2090.vercel.app#templates</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://cv-2090.vercel.app#ats-analysis</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Sobre -->
+  <url>
+    <loc>https://cv-2090.vercel.app#about</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+</urlset>

@@ -194,21 +194,21 @@ function BuilderContent() {
         <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6">
           <div className="max-w-2xl mx-auto">
             {/* Toolbar */}
-            <div className={`flex items-center justify-between mb-4 p-3 rounded-lg border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-              <div className="flex items-center gap-2">
-                <Layout className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
-                <select
-                  value={template}
-                  onChange={(e) => setTemplate(e.target.value as TemplateId)}
-                  className={`text-sm border rounded px-2 py-1 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
-                >
-                  {templates.map((tpl) => (
-                    <option key={tpl.id} value={tpl.id}>{tpl.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                {/* Undo/Redo Buttons */}
+            <div className={`mb-4 p-3 rounded-lg border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+              {/* Linha 1: Template + Undo/Redo */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Layout className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <select
+                    value={template}
+                    onChange={(e) => setTemplate(e.target.value as TemplateId)}
+                    className={`text-sm border rounded px-2 py-1 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
+                  >
+                    {templates.map((tpl) => (
+                      <option key={tpl.id} value={tpl.id}>{tpl.label}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="flex items-center gap-1" data-tour="undo-redo">
                   <button
                     onClick={undo}
@@ -235,84 +235,78 @@ function BuilderContent() {
                     <Redo2 className="w-4 h-4" />
                   </button>
                 </div>
+              </div>
 
-                <div className={`w-px h-6 ${isDark ? 'bg-gray-700' : 'bg-gray-300'}`} />
-
-                {/* Resume Manager Button */}
+              {/* Linha 2: Botões de ferramentas */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 <button
                   onClick={() => setShowResumeManager(true)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap ${
                     isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                   }`}
                   title="Gerenciar Currículos"
                 >
                   <FolderOpen className="w-4 h-4" />
-                  <span className="hidden sm:inline">Currículos</span>
+                  <span className="hidden md:inline">Currículos</span>
                 </button>
 
-                {/* ATS Analysis Button */}
                 <button
                   onClick={() => setShowATSAnalysis(true)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap ${
                     isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                   }`}
                   title="Análise ATS"
                   data-tour="ats-button"
                 >
                   <Target className="w-4 h-4" />
-                  <span className="hidden sm:inline">ATS</span>
+                  <span className="hidden md:inline">ATS</span>
                 </button>
 
-                {/* Fullscreen Preview Button */}
                 <button
                   onClick={() => setShowFullscreenPreview(true)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap ${
                     isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                   }`}
                   title="Preview em Tela Cheia"
                 >
                   <Maximize2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Tela Cheia</span>
+                  <span className="hidden md:inline">Tela Cheia</span>
                 </button>
 
-                {/* Version Comparison Button */}
                 {versionHistory.length > 0 && (
                   <button
                     onClick={() => setShowVersionComparison(true)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap ${
                       isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                     }`}
                     title="Comparar Versões"
                   >
                     <GitCompare className="w-4 h-4" />
-                    <span className="hidden sm:inline">Comparar</span>
+                    <span className="hidden md:inline">Comparar</span>
                   </button>
                 )}
 
-                {/* Cover Letter Button */}
                 <button
                   onClick={() => setShowCoverLetter(true)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap ${
                     isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                   }`}
                   title="Carta de Apresentação"
                 >
                   <FileText className="w-4 h-4" />
-                  <span className="hidden sm:inline">Carta</span>
+                  <span className="hidden md:inline">Carta</span>
                 </button>
 
-                {/* Industry Templates Button */}
                 <button
                   onClick={() => setShowIndustryTemplates(true)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors whitespace-nowrap ${
                     isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                   }`}
                   title="Templates por Indústria"
                 >
                   <Briefcase className="w-4 h-4" />
-                  <span className="hidden sm:inline">Indústria</span>
+                  <span className="hidden md:inline">Indústria</span>
                 </button>
-
               </div>
             </div>
 

@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import { useResumeStore } from '../../lib/store';
-import { Mail, Phone, MapPin, Briefcase, GraduationCap, Award, Globe, Link2, FolderKanban, Code, Linkedin, Github } from 'lucide-react';
+import { Mail, Phone, MapPin, Briefcase, GraduationCap, Award, Globe, Link2, FolderKanban, Code, Linkedin, Github, Twitter, Instagram, Youtube, Calendar, Flag, Target, DollarSign, Languages, Sparkles, Heart } from 'lucide-react';
 import { translations } from '../../types/resume';
 import { useResumeBasics, useResumeExperiences, useResumeEducation, useResumeProjects, useResumeSkills, useResumePhoto, useLanguage, useTemplate, useTheme } from '../../hooks/useResume';
 
@@ -46,7 +46,7 @@ function PreviewComponent() {
               {basics.fullName || 'Seu Nome'}
             </h1>
             <p className="text-blue-100 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
-              {basics.headline || 'Seu Cargo'}
+              {basics.headline || 'Sua Profissão'}
             </p>
           </div>
         </div>
@@ -69,6 +69,18 @@ function PreviewComponent() {
               <span className="truncate">{basics.location}</span>
             </span>
           )}
+          {basics.website && (
+            <span className="flex items-center gap-1 text-blue-100 truncate">
+              <Globe className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{basics.website}</span>
+            </span>
+          )}
+          {basics.linkedin && (
+            <span className="flex items-center gap-1 text-blue-100 truncate">
+              <Linkedin className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{basics.linkedin}</span>
+            </span>
+          )}
         </div>
       </div>
       
@@ -77,6 +89,147 @@ function PreviewComponent() {
           <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} leading-relaxed`}>
             {basics.summary}
           </p>
+        )}
+
+        {/* Informações Pessoais */}
+        {(basics.birthDate || basics.nationality || basics.maritalStatus || basics.languages.length > 0 || basics.objectives) && (
+          <div>
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <Heart className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                {t.personalInfo}
+              </h3>
+            </div>
+            <div className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} space-y-1`}>
+              {basics.birthDate && (
+                <p className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3 flex-shrink-0" />
+                  <span>{new Date(basics.birthDate).toLocaleDateString(language === 'pt' ? 'pt-BR' : language === 'en' ? 'en-US' : 'es-ES')}</span>
+                </p>
+              )}
+              {basics.nationality && (
+                <p className="flex items-center gap-2">
+                  <Flag className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.nationality}</span>
+                </p>
+              )}
+              {basics.maritalStatus && (
+                <p className="flex items-center gap-2">
+                  <Heart className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.maritalStatus}</span>
+                </p>
+              )}
+              {basics.languages.length > 0 && (
+                <p className="flex items-center gap-2">
+                  <Languages className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.languages.join(', ')}</span>
+                </p>
+              )}
+              {basics.objectives && (
+                <p className="flex items-start gap-2 mt-2">
+                  <Target className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{basics.objectives}</span>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Endereço Completo */}
+        {(basics.street || basics.city || basics.state || basics.zipCode || basics.country) && (
+          <div>
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                {t.address}
+              </h3>
+            </div>
+            <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              {[basics.street, basics.city, basics.state, basics.zipCode, basics.country].filter(Boolean).join(', ')}
+            </p>
+          </div>
+        )}
+
+        {/* Redes Sociais */}
+        {(basics.twitter || basics.instagram || basics.behance || basics.dribbble || basics.medium || basics.youtube) && (
+          <div>
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <Link2 className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                {t.socialMedia}
+              </h3>
+            </div>
+            <div className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} space-y-1`}>
+              {basics.twitter && (
+                <p className="flex items-center gap-2">
+                  <Twitter className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.twitter}</span>
+                </p>
+              )}
+              {basics.instagram && (
+                <p className="flex items-center gap-2">
+                  <Instagram className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.instagram}</span>
+                </p>
+              )}
+              {basics.behance && (
+                <p className="flex items-center gap-2">
+                  <Link2 className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.behance}</span>
+                </p>
+              )}
+              {basics.dribbble && (
+                <p className="flex items-center gap-2">
+                  <Link2 className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.dribbble}</span>
+                </p>
+              )}
+              {basics.medium && (
+                <p className="flex items-center gap-2">
+                  <Link2 className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.medium}</span>
+                </p>
+              )}
+              {basics.youtube && (
+                <p className="flex items-center gap-2">
+                  <Youtube className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.youtube}</span>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Informações Adicionais */}
+        {(basics.interests.length > 0 || basics.availability || basics.salaryExpectation) && (
+          <div>
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <Sparkles className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                {t.additionalInfo}
+              </h3>
+            </div>
+            <div className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} space-y-1`}>
+              {basics.interests.length > 0 && (
+                <p className="flex items-center gap-2">
+                  <Sparkles className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.interests.join(', ')}</span>
+                </p>
+              )}
+              {basics.availability && (
+                <p className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.availability}</span>
+                </p>
+              )}
+              {basics.salaryExpectation && (
+                <p className="flex items-center gap-2">
+                  <DollarSign className="w-3 h-3 flex-shrink-0" />
+                  <span>{basics.salaryExpectation}</span>
+                </p>
+              )}
+            </div>
+          </div>
         )}
         
         {experiences.length > 0 && (
@@ -96,7 +249,7 @@ function PreviewComponent() {
                         {exp.position || 'Cargo'}
                       </p>
                       <p className="text-xs text-blue-600 font-medium truncate">
-                        {exp.company || 'Empresa'}
+                        {exp.company || 'Organização'}
                       </p>
                     </div>
                     <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} whitespace-nowrap flex-shrink-0`}>
@@ -131,7 +284,7 @@ function PreviewComponent() {
                         {edu.degree} {edu.field && `- ${edu.field}`}
                       </p>
                       <p className="text-xs text-blue-600 font-medium truncate">
-                        {edu.institution || 'Instituição'}
+                        {edu.institution || 'Instituição de Ensino'}
                       </p>
                     </div>
                     <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} whitespace-nowrap flex-shrink-0`}>
@@ -195,7 +348,7 @@ function PreviewComponent() {
         
         {!basics.fullName && experiences.length === 0 && education.length === 0 && skills.length === 0 && (
           <div className={`text-center py-8 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-            <p className="text-xs sm:text-sm">Preencha os dados para ver o preview</p>
+            <p className="text-xs sm:text-sm">Preencha os seus dados para ver o preview do currículo</p>
           </div>
         )}
       </div>

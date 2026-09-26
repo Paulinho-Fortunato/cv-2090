@@ -1,5 +1,5 @@
-import { useCallback, useMemo } from 'react';
-import { User, Mail, Phone, MapPin, FileText, Briefcase, Globe, Link2, Camera, X, Info } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { User, Mail, Phone, MapPin, FileText, Briefcase, Globe, Link2, Camera, X, Info, Calendar, Flag, Heart, Home, Twitter, Instagram, Youtube, Target, DollarSign, Languages, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
 import { useShallow } from 'zustand/react/shallow';
@@ -20,8 +20,25 @@ export function BasicsForm() {
   const t = translations[language];
   const isDark = theme === 'dark';
 
+  // Estados para controlar seções colapsáveis
+  const [expandedSections, setExpandedSections] = useState({
+    personal: true,
+    address: false,
+    social: false,
+    additional: false,
+  });
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   const handleChange = useCallback((field: string, value: string) => {
     updateBasics({ [field]: value });
+  }, [updateBasics]);
+
+  const handleArrayChange = useCallback((field: 'languages' | 'interests', value: string) => {
+    const items = value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    updateBasics({ [field]: items });
   }, [updateBasics]);
 
   const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,11 +58,31 @@ export function BasicsForm() {
   
   const labelClass = useMemo(() => `block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`, [isDark]);
 
+  const sectionHeaderClass = useMemo(() => `flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
+    isDark ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'
+  }`, [isDark]);
+
   const tips = useMemo(() => ({
     fullName: language === 'pt' ? 'Use seu nome completo como aparece em documentos oficiais' : 'Use your full name as it appears on official documents',
     headline: language === 'pt' ? 'Ex: Desenvolvedor Full Stack, Designer UX, Gerente de Projetos' : 'Ex: Full Stack Developer, UX Designer, Project Manager',
     summary: language === 'pt' ? 'Máximo 3-4 linhas destacando suas principais conquistas e habilidades' : 'Max 3-4 lines highlighting your main achievements and skills',
+    languages: language === 'pt' ? 'Separe os idiomas por vírgula. Ex: Português, Inglês, Espanhol' : 'Separate languages by comma. Ex: Portuguese, English, Spanish',
+    interests: language === 'pt' ? 'Separe os interesses por vírgula. Ex: Tecnologia, Design, Música' : 'Separate interests by comma. Ex: Technology, Design, Music',
   }), [language]);
+
+  const SectionHeader = ({ title, icon: Icon, section }: { title: string; icon: any; section: keyof typeof expandedSections }) => (
+    <div className={sectionHeaderClass} onClick={() => toggleSection(section)}>
+      <div className="flex items-center gap-2">
+        <Icon className="w-5 h-5 text-blue-600" />
+        <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
+      </div>
+      {expandedSections[section] ? (
+        <ChevronUp className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+      ) : (
+        <ChevronDown className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -82,6 +119,7 @@ export function BasicsForm() {
         </div>
       </div>
 
+      {/* Informações Básicas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={labelClass}>
@@ -99,7 +137,7 @@ export function BasicsForm() {
               value={basics.fullName}
               onChange={(e) => handleChange('fullName', e.target.value)}
               className={inputClass}
-              placeholder="João Silva"
+              placeholder="Nome Completo"
             />
           </div>
         </div>
@@ -120,7 +158,7 @@ export function BasicsForm() {
               value={basics.headline}
               onChange={(e) => handleChange('headline', e.target.value)}
               className={inputClass}
-              placeholder="Desenvolvedor Full Stack"
+              placeholder="Cargo Desejado"
             />
           </div>
         </div>
@@ -134,7 +172,7 @@ export function BasicsForm() {
               value={basics.email}
               onChange={(e) => handleChange('email', e.target.value)}
               className={inputClass}
-              placeholder="joao@email.com"
+              placeholder="seuemail@exemplo.ao"
             />
           </div>
         </div>
@@ -147,7 +185,7 @@ export function BasicsForm() {
               value={basics.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
               className={inputClass}
-              placeholder="(11) 99999-9999"
+              placeholder="+244 923 456 789"
             />
           </div>
         </div>
@@ -160,7 +198,7 @@ export function BasicsForm() {
               value={basics.location}
               onChange={(e) => handleChange('location', e.target.value)}
               className={inputClass}
-              placeholder="São Paulo, SP - Brasil"
+              placeholder="Luanda, Angola"
             />
           </div>
         </div>
@@ -173,7 +211,7 @@ export function BasicsForm() {
               value={basics.website}
               onChange={(e) => handleChange('website', e.target.value)}
               className={inputClass}
-              placeholder="www.seusite.com"
+              placeholder="www.seusite.ao"
             />
           </div>
         </div>
@@ -223,10 +261,320 @@ export function BasicsForm() {
               className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
                 isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'
               }`}
-              placeholder={language === 'pt' ? 'Descreva brevemente sua experiência e objetivos...' : 'Briefly describe your experience and goals...'}
+              placeholder={language === 'pt' ? 'Descreva brevemente a sua experiência profissional e objectivos de carreira...' : 'Briefly describe your experience and goals...'}
             />
           </div>
         </div>
+      </div>
+
+      {/* Informações Pessoais */}
+      <div className="space-y-4">
+        <SectionHeader title={t.personalInfo} icon={Heart} section="personal" />
+        {expandedSections.personal && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}">
+            <div>
+              <label className={labelClass}>{t.birthDate}</label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="date"
+                  value={basics.birthDate}
+                  onChange={(e) => handleChange('birthDate', e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.nationality}</label>
+              <div className="relative">
+                <Flag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.nationality}
+                  onChange={(e) => handleChange('nationality', e.target.value)}
+                  className={inputClass}
+                  placeholder="Angolano(a)"
+                />
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className={labelClass}>{t.maritalStatus}</label>
+              <div className="relative">
+                <Heart className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={basics.maritalStatus}
+                  onChange={(e) => handleChange('maritalStatus', e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="Solteiro(a)">Solteiro(a)</option>
+                  <option value="Casado(a)">Casado(a)</option>
+                  <option value="Divorciado(a)">Divorciado(a)</option>
+                  <option value="Viúvo(a)">Viúvo(a)</option>
+                  <option value="União de Facto">União de Facto</option>
+                  <option value="Prefiro não informar">Prefiro não informar</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Endereço Completo */}
+      <div className="space-y-4">
+        <SectionHeader title={t.address} icon={Home} section="address" />
+        {expandedSections.address && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}">
+            <div className="md:col-span-2">
+              <label className={labelClass}>{t.street}</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.street}
+                  onChange={(e) => handleChange('street', e.target.value)}
+                  className={inputClass}
+                  placeholder="Rua da Missão, 123 - Maianga"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.city}</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.city}
+                  onChange={(e) => handleChange('city', e.target.value)}
+                  className={inputClass}
+                  placeholder="Luanda"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.state}</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.state}
+                  onChange={(e) => handleChange('state', e.target.value)}
+                  className={inputClass}
+                  placeholder="Luanda"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.zipCode}</label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.zipCode}
+                  onChange={(e) => handleChange('zipCode', e.target.value)}
+                  className={inputClass}
+                  placeholder="Código Postal (opcional)"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.country}</label>
+              <div className="relative">
+                <Flag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.country}
+                  onChange={(e) => handleChange('country', e.target.value)}
+                  className={inputClass}
+                  placeholder="Angola"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Redes Sociais */}
+      <div className="space-y-4">
+        <SectionHeader title={t.socialMedia} icon={Twitter} section="social" />
+        {expandedSections.social && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}">
+            <div>
+              <label className={labelClass}>{t.twitter}</label>
+              <div className="relative">
+                <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.twitter}
+                  onChange={(e) => handleChange('twitter', e.target.value)}
+                  className={inputClass}
+                  placeholder="@seuusuario"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.instagram}</label>
+              <div className="relative">
+                <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.instagram}
+                  onChange={(e) => handleChange('instagram', e.target.value)}
+                  className={inputClass}
+                  placeholder="@seuusuario"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.behance}</label>
+              <div className="relative">
+                <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.behance}
+                  onChange={(e) => handleChange('behance', e.target.value)}
+                  className={inputClass}
+                  placeholder="behance.net/seuusuario"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.dribbble}</label>
+              <div className="relative">
+                <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.dribbble}
+                  onChange={(e) => handleChange('dribbble', e.target.value)}
+                  className={inputClass}
+                  placeholder="dribbble.com/seuusuario"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.medium}</label>
+              <div className="relative">
+                <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.medium}
+                  onChange={(e) => handleChange('medium', e.target.value)}
+                  className={inputClass}
+                  placeholder="medium.com/@seuusuario"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.youtube}</label>
+              <div className="relative">
+                <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.youtube}
+                  onChange={(e) => handleChange('youtube', e.target.value)}
+                  className={inputClass}
+                  placeholder="youtube.com/@seucanal"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Informações Adicionais */}
+      <div className="space-y-4">
+        <SectionHeader title={t.additionalInfo} icon={Sparkles} section="additional" />
+        {expandedSections.additional && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg ${isDark ? 'border-gray-700' : 'border-gray-200'}">
+            <div className="md:col-span-2">
+              <label className={labelClass}>
+                {t.languages}
+                <span className="inline-flex ml-1 group relative">
+                  <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                  <span className="absolute bottom-full left-0 mb-2 hidden group-hover:block w-64 p-2 text-xs bg-gray-900 text-white rounded shadow-lg z-10">
+                    {tips.languages}
+                  </span>
+                </span>
+              </label>
+              <div className="relative">
+                <Languages className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.languages.join(', ')}
+                  onChange={(e) => handleArrayChange('languages', e.target.value)}
+                  className={inputClass}
+                  placeholder="Português, Inglês, Francês"
+                />
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className={labelClass}>
+                {t.interests}
+                <span className="inline-flex ml-1 group relative">
+                  <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                  <span className="absolute bottom-full left-0 mb-2 hidden group-hover:block w-64 p-2 text-xs bg-gray-900 text-white rounded shadow-lg z-10">
+                    {tips.interests}
+                  </span>
+                </span>
+              </label>
+              <div className="relative">
+                <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.interests.join(', ')}
+                  onChange={(e) => handleArrayChange('interests', e.target.value)}
+                  className={inputClass}
+                  placeholder="Tecnologia, Design, Música"
+                />
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className={labelClass}>{t.objectives}</label>
+              <div className="relative">
+                <Target className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <textarea
+                  value={basics.objectives}
+                  onChange={(e) => handleChange('objectives', e.target.value)}
+                  rows={3}
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
+                    isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'
+                  }`}
+                  placeholder={language === 'pt' ? 'Descreva os seus objectivos profissionais e o que pretende alcançar na carreira...' : 'Describe your professional goals...'}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.availability}</label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={basics.availability}
+                  onChange={(e) => handleChange('availability', e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="Imediata">Imediata</option>
+                  <option value="15 dias">15 dias</option>
+                  <option value="30 dias">30 dias</option>
+                  <option value="A combinar">A combinar</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClass}>{t.salaryExpectation}</label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={basics.salaryExpectation}
+                  onChange={(e) => handleChange('salaryExpectation', e.target.value)}
+                  className={inputClass}
+                  placeholder="Kz 500.000,00"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

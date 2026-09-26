@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, X, Loader2, Download, Copy, Check, Bot } from 'lucide-react';
+import { FileText, X, Loader2, Download, Copy, Check } from 'lucide-react';
 import { aiService, CoverLetter, AVAILABLE_MODELS } from '../../lib/aiService';
 import { useResumeStore } from '../../lib/store';
 
@@ -153,10 +153,7 @@ export function CoverLetterModal({ isOpen, onClose }: CoverLetterModalProps) {
               {aiService.isConfigured() && (
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                    <div className="flex items-center gap-2">
-                      <Bot className="w-4 h-4" />
-                      Modelo de IA
-                    </div>
+                    Modelo de IA
                   </label>
                   <select
                     value={selectedModel}

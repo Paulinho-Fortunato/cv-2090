@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, X, Loader2, Key, ExternalLink, Bot } from 'lucide-react';
+import { Sparkles, X, Loader2, Bot } from 'lucide-react';
 import { aiService, AISuggestion, AVAILABLE_MODELS } from '../../lib/aiService';
 import { useResumeStore } from '../../lib/store';
 
@@ -11,9 +11,7 @@ interface AISuggestionsModalProps {
 export function AISuggestionsModal({ isOpen, onClose }: AISuggestionsModalProps) {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
   const [loading, setLoading] = useState(false);
-  const [apiKey, setApiKey] = useState('');
   const [selectedModel, setSelectedModel] = useState(aiService.getModel());
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const resumeData = useResumeStore((state) => state.resumeData);
   const theme = useResumeStore((state) => state.theme);
   const isDark = theme === 'dark';
@@ -21,7 +19,6 @@ export function AISuggestionsModal({ isOpen, onClose }: AISuggestionsModalProps)
   useEffect(() => {
     if (isOpen) {
       loadSuggestions();
-      setApiKey(aiService.getApiKey());
       setSelectedModel(aiService.getModel());
     }
   }, [isOpen]);
@@ -36,13 +33,6 @@ export function AISuggestionsModal({ isOpen, onClose }: AISuggestionsModalProps)
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSaveApiKey = () => {
-    aiService.setApiKey(apiKey);
-    aiService.setModel(selectedModel);
-    setShowApiKeyInput(false);
-    loadSuggestions();
   };
 
   const handleModelChange = (modelId: string) => {
@@ -88,7 +78,7 @@ export function AISuggestionsModal({ isOpen, onClose }: AISuggestionsModalProps)
         <div className={`flex items-center justify-between p-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
           <h3 className={`text-lg font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             <Sparkles className="w-5 h-5 text-purple-600" />
-            Sugestões de IA (OpenRouter)
+            Sugestões de IA
           </h3>
           <button
             onClick={onClose}
@@ -99,110 +89,28 @@ export function AISuggestionsModal({ isOpen, onClose }: AISuggestionsModalProps)
         </div>
 
         <div className="p-6 space-y-4">
-          {/* API Key Configuration */}
-          {!aiService.isConfigured() && (
-            <div className={`${isDark ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-4`}>
-              {!showApiKeyInput ? (
-                <div>
-                  <p className={`text-sm ${isDark ? 'text-yellow-200' : 'text-yellow-800'} mb-2`}>
-                    💡 Configure sua API Key gratuita da OpenRouter para sugestões avançadas com IA
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowApiKeyInput(true)}
-                      className="flex items-center gap-1 bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-yellow-700"
-                    >
-                      <Key className="w-4 h-4" />
-                      Configurar API Key
-                    </button>
-                    <a
-                      href="https://openrouter.ai/keys"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-yellow-700 text-sm hover:underline"
-                    >
-                      Obter chave gratuita
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className={`text-sm ${isDark ? 'text-yellow-200' : 'text-yellow-800'} mb-1 block`}>
-                      OpenRouter API Key:
-                    </label>
-                    <input
-                      type="password"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="Cole sua API Key aqui"
-                      className={`w-full px-3 py-2 border rounded-lg ${
-                        isDark ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'
-                      }`}
-                    />
-                  </div>
-
-                  <div>
-                    <label className={`text-sm ${isDark ? 'text-yellow-200' : 'text-yellow-800'} mb-1 block`}>
-                      Modelo de IA:
-                    </label>
-                    <select
-                      value={selectedModel}
-                      onChange={(e) => handleModelChange(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg ${
-                        isDark ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'
-                      }`}
-                    >
-                      {AVAILABLE_MODELS.map((model) => (
-                        <option key={model.id} value={model.id}>
-                          {model.name} ({model.provider}) {model.free ? '- GRÁTIS' : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleSaveApiKey}
-                      disabled={!apiKey.trim()}
-                      className="bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-yellow-700 disabled:opacity-50"
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      onClick={() => setShowApiKeyInput(false)}
-                      className={`px-3 py-1.5 rounded-lg text-sm ${
-                        isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
-              )}
+          {/* Model Selector */}
+          <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3`}>
+            <div className="flex items-center gap-2 mb-2">
+              <Bot className={`w-4 h-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`} />
+              <label className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                Modelo de IA:
+              </label>
             </div>
-          )}
-
-          {/* Model Selector (when configured) */}
-          {aiService.isConfigured() && (
-            <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Bot className={`w-4 h-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`} />
-                  <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Modelo: {AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name}
-                  </span>
-                </div>
-                <button
-                  onClick={() => setShowApiKeyInput(true)}
-                  className="text-xs text-blue-600 hover:underline"
-                >
-                  Alterar
-                </button>
-              </div>
-            </div>
-          )}
+            <select
+              value={selectedModel}
+              onChange={(e) => handleModelChange(e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg ${
+                isDark ? 'bg-gray-600 border-gray-500 text-white' : 'border-gray-300'
+              }`}
+            >
+              {AVAILABLE_MODELS.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.name} ({model.provider}) {model.free ? '- GRÁTIS' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Suggestions */}
           {loading ? (

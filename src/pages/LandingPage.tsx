@@ -176,11 +176,7 @@ export function LandingPage() {
         
         <div className="relative max-w-7xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-blue-200 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-8 shadow-sm">
-              <Star className="w-4 h-4 fill-current" />
-              <span>100% Gratuito - Sem Cadastro</span>
-            </div>
+
 
             {/* Title */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight mb-6">
@@ -208,6 +204,7 @@ export function LandingPage() {
               <a 
                 href="#como-funciona"
                 className="text-gray-700 px-8 py-4 rounded-xl border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all text-lg font-semibold"
+                onClick={(e) => { e.preventDefault(); document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' }); }}
               >
                 Ver Como Funciona
               </a>

@@ -43,14 +43,26 @@ export function BasicsForm() {
     updateBasics({ [field]: items });
   }, [updateBasics]);
 
-  const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setPhoto(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Importar compressão dinamicamente
+        const { compressImage } = await import('../../../lib/imageCompression');
+        const compressedBase64 = await compressImage(file, {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+        });
+        setPhoto(compressedBase64);
+      } catch (error) {
+        console.error('Erro ao comprimir imagem:', error);
+        // Fallback: usar imagem original
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setPhoto(event.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   }, [setPhoto]);
 

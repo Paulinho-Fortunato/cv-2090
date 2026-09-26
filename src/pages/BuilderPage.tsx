@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { translations, TemplateId, Language } from '../types/resume';
 import { useActiveSection, useLanguage, useTheme, useTemplate } from '../hooks/useResume';
 import { useUndoRedo } from '../hooks/useUndoRedo';
+import { useSectionNavigation } from '../hooks/useTouchGestures';
 
 function BuilderContent() {
   const activeSection = useActiveSection();
@@ -40,6 +41,13 @@ function BuilderContent() {
 
   const { canUndo, canRedo, undo, redo } = useUndoRedo();
   const { isActive: isTourActive, completeTour, skipTour, restartTour } = useGuidedTour();
+  
+  // Navegação por gestos touch entre seções
+  useSectionNavigation(
+    ['basics', 'experience', 'education', 'certifications', 'projects', 'skills'],
+    activeSection,
+    setActiveSection
+  );
   
   // Version history for comparison
   const [versionHistory, setVersionHistory] = useState<any[]>([]);

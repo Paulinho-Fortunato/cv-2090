@@ -137,7 +137,7 @@ export function BasicsForm() {
               value={basics.fullName}
               onChange={(e) => handleChange('fullName', e.target.value)}
               className={inputClass}
-              placeholder="João Silva"
+              placeholder="Nome Completo"
             />
           </div>
         </div>
@@ -158,7 +158,7 @@ export function BasicsForm() {
               value={basics.headline}
               onChange={(e) => handleChange('headline', e.target.value)}
               className={inputClass}
-              placeholder="Desenvolvedor Full Stack"
+              placeholder="Cargo Desejado"
             />
           </div>
         </div>
@@ -172,7 +172,7 @@ export function BasicsForm() {
               value={basics.email}
               onChange={(e) => handleChange('email', e.target.value)}
               className={inputClass}
-              placeholder="joao@email.com"
+              placeholder="seuemail@exemplo.ao"
             />
           </div>
         </div>
@@ -185,7 +185,7 @@ export function BasicsForm() {
               value={basics.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
               className={inputClass}
-              placeholder="(11) 99999-9999"
+              placeholder="+244 923 456 789"
             />
           </div>
         </div>
@@ -198,7 +198,7 @@ export function BasicsForm() {
               value={basics.location}
               onChange={(e) => handleChange('location', e.target.value)}
               className={inputClass}
-              placeholder="São Paulo, SP - Brasil"
+              placeholder="Luanda, Angola"
             />
           </div>
         </div>
@@ -211,7 +211,7 @@ export function BasicsForm() {
               value={basics.website}
               onChange={(e) => handleChange('website', e.target.value)}
               className={inputClass}
-              placeholder="www.seusite.com"
+              placeholder="www.seusite.ao"
             />
           </div>
         </div>
@@ -261,7 +261,7 @@ export function BasicsForm() {
               className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
                 isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'
               }`}
-              placeholder={language === 'pt' ? 'Descreva brevemente sua experiência e objetivos...' : 'Briefly describe your experience and goals...'}
+              placeholder={language === 'pt' ? 'Descreva brevemente a sua experiência profissional e objectivos de carreira...' : 'Briefly describe your experience and goals...'}
             />
           </div>
         </div>
@@ -293,7 +293,7 @@ export function BasicsForm() {
                   value={basics.nationality}
                   onChange={(e) => handleChange('nationality', e.target.value)}
                   className={inputClass}
-                  placeholder="Brasileiro(a)"
+                  placeholder="Angolano(a)"
                 />
               </div>
             </div>
@@ -307,12 +307,12 @@ export function BasicsForm() {
                   onChange={(e) => handleChange('maritalStatus', e.target.value)}
                   className={inputClass}
                 >
-                  <option value="">Selecione...</option>
+                  <option value="">Seleccione...</option>
                   <option value="Solteiro(a)">Solteiro(a)</option>
                   <option value="Casado(a)">Casado(a)</option>
                   <option value="Divorciado(a)">Divorciado(a)</option>
                   <option value="Viúvo(a)">Viúvo(a)</option>
-                  <option value="União Estável">União Estável</option>
+                  <option value="União de Facto">União de Facto</option>
                   <option value="Prefiro não informar">Prefiro não informar</option>
                 </select>
               </div>
@@ -334,7 +334,7 @@ export function BasicsForm() {
                   value={basics.street}
                   onChange={(e) => handleChange('street', e.target.value)}
                   className={inputClass}
-                  placeholder="Rua das Flores, 123"
+                  placeholder="Rua da Missão, 123 - Maianga"
                 />
               </div>
             </div>
@@ -347,7 +347,7 @@ export function BasicsForm() {
                   value={basics.city}
                   onChange={(e) => handleChange('city', e.target.value)}
                   className={inputClass}
-                  placeholder="São Paulo"
+                  placeholder="Luanda"
                 />
               </div>
             </div>
@@ -360,7 +360,7 @@ export function BasicsForm() {
                   value={basics.state}
                   onChange={(e) => handleChange('state', e.target.value)}
                   className={inputClass}
-                  placeholder="SP"
+                  placeholder="Luanda"
                 />
               </div>
             </div>
@@ -373,7 +373,7 @@ export function BasicsForm() {
                   value={basics.zipCode}
                   onChange={(e) => handleChange('zipCode', e.target.value)}
                   className={inputClass}
-                  placeholder="01234-567"
+                  placeholder="Código Postal (opcional)"
                 />
               </div>
             </div>
@@ -386,7 +386,7 @@ export function BasicsForm() {
                   value={basics.country}
                   onChange={(e) => handleChange('country', e.target.value)}
                   className={inputClass}
-                  placeholder="Brasil"
+                  placeholder="Angola"
                 />
               </div>
             </div>
@@ -501,7 +501,7 @@ export function BasicsForm() {
                   value={basics.languages.join(', ')}
                   onChange={(e) => handleArrayChange('languages', e.target.value)}
                   className={inputClass}
-                  placeholder="Português, Inglês, Espanhol"
+                  placeholder="Português, Inglês, Francês"
                 />
               </div>
             </div>
@@ -538,7 +538,7 @@ export function BasicsForm() {
                   className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
                     isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'
                   }`}
-                  placeholder={language === 'pt' ? 'Descreva seus objetivos profissionais...' : 'Describe your professional goals...'}
+                  placeholder={language === 'pt' ? 'Descreva os seus objectivos profissionais e o que pretende alcançar na carreira...' : 'Describe your professional goals...'}
                 />
               </div>
             </div>
@@ -552,7 +552,7 @@ export function BasicsForm() {
                   onChange={(e) => handleChange('availability', e.target.value)}
                   className={inputClass}
                 >
-                  <option value="">Selecione...</option>
+                  <option value="">Seleccione...</option>
                   <option value="Imediata">Imediata</option>
                   <option value="15 dias">15 dias</option>
                   <option value="30 dias">30 dias</option>
@@ -569,7 +569,7 @@ export function BasicsForm() {
                   value={basics.salaryExpectation}
                   onChange={(e) => handleChange('salaryExpectation', e.target.value)}
                   className={inputClass}
-                  placeholder="R$ 5.000,00"
+                  placeholder="Kz 500.000,00"
                 />
               </div>
             </div>

@@ -46,7 +46,7 @@ function PreviewComponent() {
               {basics.fullName || 'Seu Nome'}
             </h1>
             <p className="text-blue-100 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
-              {basics.headline || 'Seu Cargo'}
+              {basics.headline || 'Sua Profissão'}
             </p>
           </div>
         </div>
@@ -249,7 +249,7 @@ function PreviewComponent() {
                         {exp.position || 'Cargo'}
                       </p>
                       <p className="text-xs text-blue-600 font-medium truncate">
-                        {exp.company || 'Empresa'}
+                        {exp.company || 'Organização'}
                       </p>
                     </div>
                     <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} whitespace-nowrap flex-shrink-0`}>
@@ -284,7 +284,7 @@ function PreviewComponent() {
                         {edu.degree} {edu.field && `- ${edu.field}`}
                       </p>
                       <p className="text-xs text-blue-600 font-medium truncate">
-                        {edu.institution || 'Instituição'}
+                        {edu.institution || 'Instituição de Ensino'}
                       </p>
                     </div>
                     <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} whitespace-nowrap flex-shrink-0`}>
@@ -348,7 +348,7 @@ function PreviewComponent() {
         
         {!basics.fullName && experiences.length === 0 && education.length === 0 && skills.length === 0 && (
           <div className={`text-center py-8 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
-            <p className="text-xs sm:text-sm">Preencha os dados para ver o preview</p>
+            <p className="text-xs sm:text-sm">Preencha os seus dados para ver o preview do currículo</p>
           </div>
         )}
       </div>

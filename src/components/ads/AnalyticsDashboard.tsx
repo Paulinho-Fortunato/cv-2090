@@ -101,14 +101,92 @@ export function AnalyticsDashboard({ onClose }: AnalyticsDashboardProps) {
                   <Calendar className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Último Download</p>
-                  <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {formatDate(stats.lastDownload)}
+                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Tempo Total</p>
+                  <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {stats.totalTimeSpent}min
                   </p>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* New Metrics Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Completion Rate */}
+            <div className={`${isDark ? 'bg-gray-700' : 'bg-white'} p-4 rounded-lg border ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+              <h4 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Taxa de Conclusão
+              </h4>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <div className={`w-full ${isDark ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-3`}>
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${stats.averageCompletionRate}%` }}
+                    />
+                  </div>
+                </div>
+                <span className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {stats.averageCompletionRate}%
+                </span>
+              </div>
+            </div>
+
+            {/* Top Skills */}
+            <div className={`${isDark ? 'bg-gray-700' : 'bg-white'} p-4 rounded-lg border ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+              <h4 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Skills Mais Usadas
+              </h4>
+              {stats.topSkills.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {stats.topSkills.slice(0, 5).map((skill, index) => (
+                    <span
+                      key={index}
+                      className={`px-2 py-1 rounded text-xs ${
+                        isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-700'
+                      }`}
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Nenhuma skill registrada ainda
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Weekly Activity Chart */}
+          {stats.weeklyActivity.length > 0 && (
+            <div className={`${isDark ? 'bg-gray-700' : 'bg-white'} p-4 rounded-lg border ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+              <h4 className={`text-sm font-semibold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Atividade Semanal
+              </h4>
+              <div className="flex items-end gap-2 h-32">
+                {stats.weeklyActivity.map((activity, index) => {
+                  const maxCount = Math.max(...stats.weeklyActivity.map(a => a.count));
+                  const height = (activity.count / maxCount) * 100;
+                  const date = new Date(activity.date);
+                  const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' });
+                  
+                  return (
+                    <div key={index} className="flex-1 flex flex-col items-center gap-1">
+                      <div
+                        className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all duration-300"
+                        style={{ height: `${height}%` }}
+                        title={`${activity.count} ações em ${dayName}`}
+                      />
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {dayName}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Recent Downloads */}
           {(stats.downloads || []).length > 0 && (

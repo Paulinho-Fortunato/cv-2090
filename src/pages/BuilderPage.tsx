@@ -12,10 +12,12 @@ import { ResumeManagerModal } from '../components/ads/ResumeManagerModal';
 import { ATSAnalysisModal } from '../components/ads/ATSAnalysisModal';
 import { FullscreenPreview } from '../components/ads/FullscreenPreview';
 import { VersionComparison } from '../components/ads/VersionComparison';
+import { CoverLetterGenerator } from '../components/ads/CoverLetterGenerator';
+import { IndustryTemplates } from '../components/ads/IndustryTemplates';
 import { MobileToolbar } from '../components/builder/MobileToolbar';
 import { GuidedTour, useGuidedTour } from '../components/ui/GuidedTour';
 import { useResumeStore } from '../lib/store';
-import { Eye, EyeOff, FileText, Globe, Layout, FolderOpen, Target, Undo2, Redo2, Maximize2, GitCompare } from 'lucide-react';
+import { Eye, EyeOff, FileText, Globe, Layout, FolderOpen, Target, Undo2, Redo2, Maximize2, GitCompare, Briefcase } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { translations, TemplateId, Language } from '../types/resume';
 import { useActiveSection, useLanguage, useTheme, useTemplate } from '../hooks/useResume';
@@ -37,6 +39,8 @@ function BuilderContent() {
   const [showATSAnalysis, setShowATSAnalysis] = useState(false);
   const [showFullscreenPreview, setShowFullscreenPreview] = useState(false);
   const [showVersionComparison, setShowVersionComparison] = useState(false);
+  const [showCoverLetter, setShowCoverLetter] = useState(false);
+  const [showIndustryTemplates, setShowIndustryTemplates] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
 
   const { canUndo, canRedo, undo, redo } = useUndoRedo();
@@ -135,12 +139,48 @@ function BuilderContent() {
           <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>CV Builder</span>
         </Link>
         <div className="flex items-center gap-2">
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as Language)}
+            className={`text-xs border rounded px-2 py-1 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
+          >
+            {languages.map((lang) => (
+              <option key={lang.id} value={lang.id}>{lang.flag}</option>
+            ))}
+          </select>
           <button
             onClick={handleTogglePreview}
             className={`flex items-center gap-1.5 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}
           >
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
+        </div>
+      </div>
+
+      {/* Header Desktop */}
+      <div className={`hidden lg:block border-b px-6 py-3 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <FileText className="w-6 h-6 text-blue-600" />
+            <span className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>CV Builder</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              className={`text-sm border rounded-lg px-3 py-1.5 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
+            >
+              {languages.map((lang) => (
+                <option key={lang.id} value={lang.id}>{lang.flag} - {lang.label}</option>
+              ))}
+            </select>
+            <Link 
+              to="/" 
+              className={`text-sm ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              ← Voltar
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -249,18 +289,30 @@ function BuilderContent() {
                   </button>
                 )}
 
-                <div className={`w-px h-6 ${isDark ? 'bg-gray-700' : 'bg-gray-300'}`} />
-
-                <Globe className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value as Language)}
-                  className={`text-sm border rounded px-2 py-1 ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
+                {/* Cover Letter Button */}
+                <button
+                  onClick={() => setShowCoverLetter(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                  title="Carta de Apresentação"
                 >
-                  {languages.map((lang) => (
-                    <option key={lang.id} value={lang.id}>{lang.flag} - {lang.label}</option>
-                  ))}
-                </select>
+                  <FileText className="w-4 h-4" />
+                  <span className="hidden sm:inline">Carta</span>
+                </button>
+
+                {/* Industry Templates Button */}
+                <button
+                  onClick={() => setShowIndustryTemplates(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                  title="Templates por Indústria"
+                >
+                  <Briefcase className="w-4 h-4" />
+                  <span className="hidden sm:inline">Indústria</span>
+                </button>
+
               </div>
             </div>
 
@@ -324,6 +376,14 @@ function BuilderContent() {
         isOpen={showVersionComparison} 
         onClose={() => setShowVersionComparison(false)} 
         versions={versionHistory}
+      />
+      <CoverLetterGenerator 
+        isOpen={showCoverLetter} 
+        onClose={() => setShowCoverLetter(false)} 
+      />
+      <IndustryTemplates 
+        isOpen={showIndustryTemplates} 
+        onClose={() => setShowIndustryTemplates(false)} 
       />
       <GuidedTour 
         isActive={isTourActive} 

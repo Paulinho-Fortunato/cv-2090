@@ -168,7 +168,7 @@ export function GuidedTour({ isActive, onComplete, onSkip }: GuidedTourProps) {
           height: targetRect.height + 8,
         }}
       >
-        <div className="w-full h-full border-4 border-blue-500 rounded-lg shadow-lg shadow-blue-500/50" />
+        <div className="w-full h-full rounded-lg bg-white/10 backdrop-blur-sm" />
       </motion.div>
 
       {/* Tooltip */}

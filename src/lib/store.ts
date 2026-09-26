@@ -3,12 +3,14 @@ import { persist } from 'zustand/middleware';
 import {
   ResumeData,
   defaultResumeData,
+  defaultSectionsConfig,
   Experience,
   Education,
   Certification,
   Project,
   TemplateId,
   Language,
+  SectionConfig,
 } from '../types/resume';
 
 interface ResumeStore {
@@ -50,6 +52,10 @@ interface ResumeStore {
   redo: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
+  updateSectionsConfig: (sectionsConfig: SectionConfig[]) => void;
+  toggleSection: (sectionId: string) => void;
+  reorderSections: (fromIndex: number, toIndex: number) => void;
+  updateSectionTitle: (sectionId: string, title: string) => void;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
@@ -95,6 +101,7 @@ const migrateResumeData = (data: any): ResumeData => {
     projects: Array.isArray(data.projects) ? data.projects : [],
     skills: Array.isArray(data.skills) ? data.skills : [],
     photo: data.photo || '',
+    sectionsConfig: Array.isArray(data.sectionsConfig) ? data.sectionsConfig : defaultSectionsConfig,
   };
 };
 
@@ -371,6 +378,54 @@ export const useResumeStore = create<ResumeStore>()(
         const { history, historyIndex } = get();
         return historyIndex < history.length - 1;
       },
+
+      updateSectionsConfig: (sectionsConfig) =>
+        set((state) => ({
+          resumeData: {
+            ...state.resumeData,
+            sectionsConfig,
+          },
+        })),
+
+      toggleSection: (sectionId) =>
+        set((state) => ({
+          resumeData: {
+            ...state.resumeData,
+            sectionsConfig: state.resumeData.sectionsConfig.map((section) =>
+              section.id === sectionId
+                ? { ...section, enabled: !section.enabled }
+                : section
+            ),
+          },
+        })),
+
+      reorderSections: (fromIndex, toIndex) =>
+        set((state) => {
+          const newSections = [...state.resumeData.sectionsConfig];
+          const [moved] = newSections.splice(fromIndex, 1);
+          newSections.splice(toIndex, 0, moved);
+          // Atualizar ordem
+          const updatedSections = newSections.map((section, index) => ({
+            ...section,
+            order: index,
+          }));
+          return {
+            resumeData: {
+              ...state.resumeData,
+              sectionsConfig: updatedSections,
+            },
+          };
+        }),
+
+      updateSectionTitle: (sectionId, title) =>
+        set((state) => ({
+          resumeData: {
+            ...state.resumeData,
+            sectionsConfig: state.resumeData.sectionsConfig.map((section) =>
+              section.id === sectionId ? { ...section, title } : section
+            ),
+          },
+        })),
     }),
     {
       name: 'cv-builder-storage',

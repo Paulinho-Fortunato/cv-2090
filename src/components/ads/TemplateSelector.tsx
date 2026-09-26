@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Check, Layout, Briefcase, Code, Layers, Palette } from 'lucide-react';
+import { Check, Layout, Briefcase, Code, Layers, Palette, Sparkles } from 'lucide-react';
 import { useResumeStore } from '../../lib/store';
 import { translations } from '../../types/resume';
 import { useLanguage, useTheme, useTemplate } from '../../hooks/useResume';
@@ -44,6 +44,13 @@ const templates = [
     icon: Palette,
     description: 'Colorido e ousado',
     colors: ['from-pink-500 to-rose-600', 'bg-pink-600'],
+  },
+  {
+    id: 'custom' as TemplateId,
+    name: '✨ Personalizado',
+    icon: Sparkles,
+    description: 'Arraste e personalize',
+    colors: ['from-indigo-500 to-purple-600', 'bg-indigo-600'],
   },
 ];
 

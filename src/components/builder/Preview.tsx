@@ -15,6 +15,7 @@ function PreviewComponent() {
   const language = useLanguage();
   const template = useTemplate();
   const theme = useTheme();
+  const sectionsConfig = useResumeStore((state) => state.resumeData.sectionsConfig);
 
   const t = translations[language];
 
@@ -41,6 +42,187 @@ function PreviewComponent() {
   }, [language]);
 
   const isDark = theme === 'dark';
+
+  // Função para renderizar seções na ordem configurada (para template custom)
+  const renderCustomSections = () => {
+    const enabledSections = sectionsConfig
+      .filter((section) => section.enabled)
+      .sort((a, b) => a.order - b.order);
+
+    return enabledSections.map((section) => {
+      switch (section.type) {
+        case 'summary':
+          return basics.summary ? (
+            <div key={section.id}>
+              <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide mb-2 sm:mb-3 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                {section.title}
+              </h3>
+              <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} leading-relaxed`}>
+                {basics.summary}
+              </p>
+            </div>
+          ) : null;
+
+        case 'experience':
+          return experiences.length > 0 ? (
+            <div key={section.id}>
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <Briefcase className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                  {section.title}
+                </h3>
+              </div>
+              <div className="space-y-2 sm:space-y-3">
+                {experiences.map((exp) => (
+                  <div key={exp.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                          {exp.position || 'Cargo'}
+                        </p>
+                        <p className="text-xs text-blue-600 font-medium truncate">
+                          {exp.company || 'Empresa'}
+                        </p>
+                      </div>
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} whitespace-nowrap flex-shrink-0`}>
+                        {formatDate(exp.startDate)}{exp.endDate ? ` - ${formatDate(exp.endDate)}` : exp.current ? ' - Atual' : ''}
+                      </span>
+                    </div>
+                    {exp.description && (
+                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed line-clamp-3`}>
+                        {exp.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null;
+
+        case 'education':
+          return education.length > 0 ? (
+            <div key={section.id}>
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <GraduationCap className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                  {section.title}
+                </h3>
+              </div>
+              <div className="space-y-2 sm:space-y-3">
+                {education.map((edu) => (
+                  <div key={edu.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                          {edu.degree} {edu.field && `- ${edu.field}`}
+                        </p>
+                        <p className="text-xs text-blue-600 font-medium truncate">
+                          {edu.institution || 'Instituição'}
+                        </p>
+                      </div>
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} whitespace-nowrap flex-shrink-0`}>
+                        {formatDate(edu.startDate)}{edu.endDate ? ` - ${formatDate(edu.endDate)}` : ''}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null;
+
+        case 'certifications':
+          return certifications && certifications.length > 0 ? (
+            <div key={section.id}>
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <BadgeCheck className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                  {section.title}
+                </h3>
+              </div>
+              <div className="space-y-2 sm:space-y-3">
+                {certifications.map((cert) => (
+                  <div key={cert.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                          {cert.name}
+                        </p>
+                        <p className="text-xs text-blue-600 font-medium truncate">
+                          {cert.institution}
+                        </p>
+                      </div>
+                      <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} whitespace-nowrap flex-shrink-0`}>
+                        {formatDate(cert.date)}
+                        {cert.duration && ` • ${cert.duration}`}
+                      </span>
+                    </div>
+                    {cert.description && (
+                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed line-clamp-2`}>
+                        {cert.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null;
+
+        case 'projects':
+          return projects.length > 0 ? (
+            <div key={section.id}>
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <FolderKanban className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                  {section.title}
+                </h3>
+              </div>
+              <div className="space-y-2 sm:space-y-3">
+                {projects.map((proj) => (
+                  <div key={proj.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
+                    <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                      {proj.name}
+                    </p>
+                    {proj.technologies && (
+                      <p className="text-xs text-blue-600 truncate">{proj.technologies}</p>
+                    )}
+                    {proj.description && (
+                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 line-clamp-2`}>
+                        {proj.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null;
+
+        case 'skills':
+          return skills.length > 0 ? (
+            <div key={section.id}>
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <Award className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                  {section.title}
+                </h3>
+              </div>
+              <div className="flex flex-wrap gap-1 sm:gap-1.5">
+                {skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className={`${isDark ? 'bg-blue-900/30 text-blue-300 border-blue-800' : 'bg-blue-50 text-blue-700 border-blue-100'} px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium border`}
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null;
+
+        default:
+          return null;
+      }
+    });
+  };
 
   // Template: Moderno (Padrão)
   const renderModern = () => (
@@ -1030,11 +1212,68 @@ function PreviewComponent() {
     </div>
   );
 
+  // Template: Custom (Personalizado)
+  const renderCustom = () => (
+    <div className={`shadow-lg rounded-lg overflow-hidden w-full max-w-[600px] ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+      {/* Header com gradiente roxo */}
+      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 sm:p-6">
+        <div className="flex items-center gap-3 sm:gap-4">
+          {photo && (
+            <img 
+              src={photo} 
+              alt="" 
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-white/30 flex-shrink-0" 
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg sm:text-2xl font-bold truncate">
+              {basics.fullName || 'Seu Nome'}
+            </h1>
+            <p className="text-purple-100 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
+              {basics.headline || 'Sua Profissão'}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:gap-4 mt-3 sm:mt-4 text-xs">
+          {basics.email && (
+            <span className="flex items-center gap-1 text-purple-100 truncate">
+              <Mail className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{basics.email}</span>
+            </span>
+          )}
+          {basics.phone && (
+            <span className="flex items-center gap-1 text-purple-100 truncate">
+              <Phone className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{basics.phone}</span>
+            </span>
+          )}
+          {basics.location && (
+            <span className="flex items-center gap-1 text-purple-100 truncate">
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{basics.location}</span>
+            </span>
+          )}
+        </div>
+      </div>
+      
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
+        {renderCustomSections()}
+        
+        {sectionsConfig.filter(s => s.enabled).length === 0 && (
+          <div className={`text-center py-8 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+            <p className="text-xs sm:text-sm">Configure as seções no editor personalizado</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   switch (template) {
     case 'executive': return renderExecutive();
     case 'tech': return renderTech();
     case 'compact': return renderCompact();
     case 'creative': return renderCreative();
+    case 'custom': return renderCustom();
     default: return renderModern();
   }
 }

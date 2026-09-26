@@ -153,10 +153,10 @@ export function LandingPage() {
               <span className="text-xl font-bold text-gray-900">CV Builder</span>
             </div>
             <nav className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Recursos</a>
-              <a href="#templates" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Templates</a>
-              <a href="#como-funciona" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">Como Funciona</a>
-              <a href="#faq" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">FAQ</a>
+              <a href="#features" className="text-sm text-gray-600 hover:text-gray-900 transition-colors" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}>Recursos</a>
+              <a href="#templates" className="text-sm text-gray-600 hover:text-gray-900 transition-colors" onClick={(e) => { e.preventDefault(); document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' }); }}>Templates</a>
+              <a href="#como-funciona" className="text-sm text-gray-600 hover:text-gray-900 transition-colors" onClick={(e) => { e.preventDefault(); document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' }); }}>Como Funciona</a>
+              <a href="#faq" className="text-sm text-gray-600 hover:text-gray-900 transition-colors" onClick={(e) => { e.preventDefault(); document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' }); }}>FAQ</a>
             </nav>
             <Link 
               to="/builder" 
@@ -179,7 +179,7 @@ export function LandingPage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-blue-200 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-8 shadow-sm">
               <Star className="w-4 h-4 fill-current" />
-              <span>100% Gratuito - Sem Cadastro - Feito em Angola 🇦🇴</span>
+              <span>100% Gratuito - Sem Cadastro</span>
             </div>
 
             {/* Title */}
@@ -538,7 +538,7 @@ export function LandingPage() {
           
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm">
-              © 2024 CV Builder. Feito com ❤️ em Angola 🇦🇴
+              © {new Date().getFullYear()} CV Builder. Todos os direitos reservados.
             </p>
             <p className="text-sm">
               Seus dados ficam salvos apenas no seu navegador. Privacidade total garantida.

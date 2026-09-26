@@ -52,7 +52,7 @@ export function BasicsForm() {
     }
   }, [setPhoto]);
 
-  const inputClass = useMemo(() => `w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+  const inputClass = useMemo(() => `w-full pl-10 pr-4 py-2 sm:py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base ${
     isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'
   }`, [isDark]);
   

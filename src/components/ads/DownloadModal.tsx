@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, Download, Clock, Printer, Share2, CheckCircle, Shield } from 'lucide-react';
+import { X, Download, Clock, Printer, Share2, CheckCircle, Shield, Eye } from 'lucide-react';
 import { useResumeStore } from '../../lib/store';
 import { useAnalyticsStore } from '../../lib/analytics';
 import { translations } from '../../types/resume';
+import { TemplateSelector } from './TemplateSelector';
+import { TemplateId } from '../../types/resume';
 
 interface DownloadModalProps {
   isOpen: boolean;
@@ -43,8 +45,12 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
   const [countdown, setCountdown] = useState(5);
   const [canDownload, setCanDownload] = useState(false);
   const [showShareLink, setShowShareLink] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const language = useResumeStore((state) => state.language);
+  const theme = useResumeStore((state) => state.theme);
+  const setTemplate = useResumeStore((state) => state.setTemplate);
   const t = translations[language];
+  const isDark = theme === 'dark';
 
   const atsScore = isOpen ? calculateATSScore() : 0;
 
@@ -52,6 +58,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
     setCountdown(5);
     setCanDownload(false);
     setShowShareLink(false);
+    setShowPreview(false);
   }, []);
 
   useEffect(() => {
@@ -65,22 +72,63 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
     return () => clearInterval(timer);
   }, [isOpen, resetModal]);
 
-  // Função para validar imagem antes de usar no PDF
+  const handleTemplateSelect = (templateId: TemplateId) => {
+    setTemplate(templateId);
+  };
+
+  // Função para validar e otimizar imagem antes de usar no PDF
   const validatePhoto = async (photoUrl: string): Promise<string | null> => {
     if (!photoUrl) return null;
     
     return new Promise((resolve) => {
       const img = new window.Image();
       
-      // Timeout de 3 segundos
+      // Timeout de 5 segundos
       const timeout = setTimeout(() => {
         console.warn('Timeout ao validar imagem do perfil');
         resolve(null);
-      }, 3000);
+      }, 5000);
       
       img.onload = () => {
         clearTimeout(timeout);
-        resolve(photoUrl);
+        
+        // Criar canvas para otimizar a imagem
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          resolve(photoUrl);
+          return;
+        }
+        
+        // Tamanho ideal para PDF (200x200 para boa qualidade)
+        const maxSize = 200;
+        let width = img.width;
+        let height = img.height;
+        
+        // Manter proporção
+        if (width > height) {
+          if (width > maxSize) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Desenhar imagem no canvas
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Converter para base64 com qualidade otimizada
+        const optimizedPhoto = canvas.toDataURL('image/jpeg', 0.92);
+        
+        resolve(optimizedPhoto);
       };
       
       img.onerror = () => {
@@ -105,19 +153,57 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
       const styles = StyleSheet.create({
         page: { padding: 30, fontFamily: 'Helvetica' },
-        header: { backgroundColor: '#2563eb', padding: 20, marginBottom: 15 },
+        header: { 
+          backgroundColor: '#2563eb', 
+          padding: 20, 
+          marginBottom: 15,
+          borderBottomWidth: 3,
+          borderBottomColor: '#1e40af'
+        },
         headerContent: { flexDirection: 'row' as const, alignItems: 'center' },
-        photo: { width: 60, height: 60, borderRadius: 30, marginRight: 15, borderWidth: 2, borderColor: '#ffffff' },
+        photoContainer: {
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+          marginRight: 15,
+          borderWidth: 3,
+          borderColor: 'rgba(255, 255, 255, 0.3)',
+          overflow: 'hidden' as const,
+        },
+        photo: { 
+          width: 64, 
+          height: 64, 
+          borderRadius: 32,
+        },
         headerText: { flex: 1 },
-        name: { fontSize: 22, fontWeight: 'bold', color: '#ffffff' },
-        headline: { fontSize: 12, color: '#bfdbfe', marginTop: 4 },
-        contactText: { fontSize: 9, color: '#dbeafe', marginRight: 15 },
-        sectionTitle: { fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase' as const, marginBottom: 8, marginTop: 15 },
-        summary: { fontSize: 9, color: '#374151', lineHeight: 1.5 },
-        expItem: { marginBottom: 10, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: '#bfdbfe' },
-        expPosition: { fontSize: 10, fontWeight: 'bold' as const, color: '#111827' },
-        expCompany: { fontSize: 9, color: '#2563eb' },
-        expDate: { fontSize: 8, color: '#6b7280' },
+        name: { fontSize: 24, fontWeight: 'bold', color: '#ffffff', letterSpacing: 0.5 },
+        headline: { fontSize: 13, color: '#dbeafe', marginTop: 4, fontStyle: 'italic' as const },
+        contactText: { fontSize: 10, color: '#dbeafe', marginRight: 15 },
+        sectionTitle: { 
+          fontSize: 12, 
+          fontWeight: 'bold', 
+          color: '#1e40af', 
+          textTransform: 'uppercase' as const, 
+          marginBottom: 10, 
+          marginTop: 18,
+          borderBottomWidth: 1,
+          borderBottomColor: '#bfdbfe',
+          paddingBottom: 4
+        },
+        summary: { fontSize: 10, color: '#374151', lineHeight: 1.6 },
+        expItem: { 
+          marginBottom: 12, 
+          paddingLeft: 10, 
+          borderLeftWidth: 3, 
+          borderLeftColor: '#3b82f6',
+          backgroundColor: '#f9fafb',
+          paddingVertical: 8,
+          paddingRight: 8,
+          borderRadius: 4
+        },
+        expPosition: { fontSize: 11, fontWeight: 'bold', color: '#111827' },
+        expCompany: { fontSize: 10, color: '#2563eb', fontWeight: 'medium', marginTop: 2 },
+        expDate: { fontSize: 9, color: '#6b7280', marginTop: 2, fontStyle: 'italic' as const },
       });
 
       const formatDate = (date: string) => {
@@ -133,12 +219,14 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
             <View style={styles.header}>
               <View style={styles.headerContent}>
                 {validPhoto && (
-                  <Image src={validPhoto} style={styles.photo} />
+                  <View style={styles.photoContainer}>
+                    <Image src={validPhoto} style={styles.photo} />
+                  </View>
                 )}
                 <View style={styles.headerText}>
                   <Text style={styles.name}>{basics.fullName || 'Seu Nome'}</Text>
                   <Text style={styles.headline}>{basics.headline || ''}</Text>
-                  <View style={{ flexDirection: 'row' as const, marginTop: 10, flexWrap: 'wrap' as const }}>
+                  <View style={{ flexDirection: 'row' as const, marginTop: 12, flexWrap: 'wrap' as const, gap: 12 }}>
                     {basics.email && <Text style={styles.contactText}>{basics.email}</Text>}
                     {basics.phone && <Text style={styles.contactText}>{basics.phone}</Text>}
                     {basics.location && <Text style={styles.contactText}>{basics.location}</Text>}
@@ -156,14 +244,18 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {experiences.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>EXPERIENCIA PROFISSIONAL</Text>
+                <Text style={styles.sectionTitle}>EXPERIÊNCIA PROFISSIONAL</Text>
                 {experiences.map((exp, i) => (
                   <View key={i} style={styles.expItem}>
-                    <Text style={styles.expPosition}>{exp.position}</Text>
-                    <Text style={styles.expCompany}>{exp.company}</Text>
-                    <Text style={styles.expDate}>
-                      {formatDate(exp.startDate)} - {exp.current ? 'Atual' : formatDate(exp.endDate)}
-                    </Text>
+                    <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.expPosition}>{exp.position}</Text>
+                        <Text style={styles.expCompany}>{exp.company}</Text>
+                      </View>
+                      <Text style={styles.expDate}>
+                        {formatDate(exp.startDate)} - {exp.current ? 'Atual' : formatDate(exp.endDate)}
+                      </Text>
+                    </View>
                     {exp.description && <Text style={styles.summary}>{exp.description}</Text>}
                   </View>
                 ))}
@@ -172,14 +264,18 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {education.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>FORMACAO ACADEMICA</Text>
+                <Text style={styles.sectionTitle}>FORMAÇÃO ACADÊMICA</Text>
                 {education.map((edu, i) => (
                   <View key={i} style={styles.expItem}>
-                    <Text style={styles.expPosition}>{edu.degree} {edu.field ? `- ${edu.field}` : ''}</Text>
-                    <Text style={styles.expCompany}>{edu.institution}</Text>
-                    <Text style={styles.expDate}>
-                      {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
-                    </Text>
+                    <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.expPosition}>{edu.degree} {edu.field ? `- ${edu.field}` : ''}</Text>
+                        <Text style={styles.expCompany}>{edu.institution}</Text>
+                      </View>
+                      <Text style={styles.expDate}>
+                        {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                      </Text>
+                    </View>
                   </View>
                 ))}
               </View>
@@ -187,14 +283,18 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {certifications && certifications.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>HABILITACOES PROFISSIONAIS</Text>
+                <Text style={styles.sectionTitle}>HABILITAÇÕES PROFISSIONAIS</Text>
                 {certifications.map((cert, i) => (
                   <View key={i} style={styles.expItem}>
-                    <Text style={styles.expPosition}>{cert.name}</Text>
-                    <Text style={styles.expCompany}>{cert.institution}</Text>
-                    <Text style={styles.expDate}>
-                      {formatDate(cert.date)}{cert.duration ? ` • ${cert.duration}` : ''}
-                    </Text>
+                    <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.expPosition}>{cert.name}</Text>
+                        <Text style={styles.expCompany}>{cert.institution}</Text>
+                      </View>
+                      <Text style={styles.expDate}>
+                        {formatDate(cert.date)}{cert.duration ? ` • ${cert.duration}` : ''}
+                      </Text>
+                    </View>
                     {cert.description && <Text style={styles.summary}>{cert.description}</Text>}
                   </View>
                 ))}
@@ -217,7 +317,23 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
             {skills.length > 0 && (
               <View>
                 <Text style={styles.sectionTitle}>HABILIDADES</Text>
-                <Text style={styles.summary}>{(skills || []).join(', ')}</Text>
+                <View style={{ flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: 8 }}>
+                  {(skills || []).map((skill, i) => (
+                    <View 
+                      key={i} 
+                      style={{ 
+                        backgroundColor: '#dbeafe', 
+                        paddingHorizontal: 10, 
+                        paddingVertical: 5, 
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: '#3b82f6'
+                      }}
+                    >
+                      <Text style={{ fontSize: 9, color: '#1e40af', fontWeight: 'medium' }}>{skill}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             )}
           </Page>
@@ -254,7 +370,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Erro ao gerar PDF. Tente usar a opção de impressão (Ctrl+P) e salvar como PDF.');
+      alert('Erro ao gerar PDF: ' + (error as Error).message + '\nTente novamente ou use a opção de impressão (Ctrl+P).');
     }
   };
 
@@ -316,28 +432,31 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+      <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`flex items-center justify-between p-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+          <h3 className={`text-lg font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             <Download className="w-5 h-5 text-blue-600" />
             {t.downloadPdf}
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className={`text-lg font-bold ${isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}>
+            ×
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 space-y-6">
+          {/* Template Selector */}
+          <TemplateSelector onSelect={handleTemplateSelect} />
+
           {/* ATS Score */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+          <div className={`${isDark ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-4 border ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-gray-700">{t.atsScore}</span>
+                <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t.atsScore}</span>
               </div>
               <span className={`text-lg font-bold ${getScoreColor(atsScore)}`}>{atsScore}/100</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className={`w-full ${isDark ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2`}>
               <div
                 className={`h-2 rounded-full transition-all duration-500 ${
                   atsScore >= 80 ? 'bg-green-500' : atsScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
@@ -345,12 +464,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
                 style={{ width: `${atsScore}%` }}
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">{getScoreLabel(atsScore)}</p>
-          </div>
-
-          {/* Ad Space */}
-          <div className="bg-gray-100 border border-dashed border-gray-300 rounded-lg h-[200px] flex items-center justify-center mb-4">
-            <span className="text-sm text-gray-400">Espaço Publicitário (336x280)</span>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{getScoreLabel(atsScore)}</p>
           </div>
 
           {/* Actions */}
@@ -359,9 +473,9 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
               <div className="text-center py-4">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Clock className="w-5 h-5 text-blue-600 animate-pulse" />
-                  <span className="text-sm text-gray-600">Aguarde {countdown} segundos...</span>
+                  <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Aguarde {countdown} segundos...</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className={`w-full ${isDark ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2`}>
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-1000"
                     style={{ width: `${((5 - countdown) / 5) * 100}%` }}
@@ -381,14 +495,22 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
                 <div className="flex gap-2">
                   <button
                     onClick={handlePrint}
-                    className="flex-1 flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                    className={`flex-1 flex items-center justify-center gap-2 border py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+                      isDark
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
                   >
                     <Printer className="w-4 h-4" />
                     {t.print}
                   </button>
                   <button
                     onClick={handleShare}
-                    className="flex-1 flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                    className={`flex-1 flex items-center justify-center gap-2 border py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+                      isDark
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
                   >
                     {showShareLink ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Share2 className="w-4 h-4" />}
                     {showShareLink ? t.copied : t.share}

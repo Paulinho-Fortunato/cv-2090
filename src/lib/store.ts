@@ -313,17 +313,29 @@ export const useResumeStore = create<ResumeStore>()(
       setTheme: (theme) => set({ theme }),
       setLanguage: (language) => set({ language }),
       setTemplate: (template) => set({ template }),
-      resetAll: () => set({ resumeData: defaultResumeData }),
+      resetAll: () => set({
+        resumeData: defaultResumeData,
+        activeSection: 'basics',
+        theme: 'light',
+        language: 'pt',
+        template: 'modern',
+      }),
       importData: (resumeData) => set({ resumeData }),
     }),
     {
       name: 'cv-builder-storage',
-      migrate: (persistedState: any) => {
+      version: 1,
+      migrate: (persistedState: any, version: number) => {
         // Migra dados antigos para a nova estrutura
         if (persistedState && persistedState.resumeData) {
           return {
             ...persistedState,
             resumeData: migrateResumeData(persistedState.resumeData),
+            // Garantir que todos os campos existam com valores padrão
+            language: persistedState.language || 'pt',
+            theme: persistedState.theme || 'light',
+            template: persistedState.template || 'modern',
+            activeSection: persistedState.activeSection || 'basics',
           };
         }
         return persistedState;

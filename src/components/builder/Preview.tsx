@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import { useResumeStore } from '../../lib/store';
-import { Mail, Phone, MapPin, Briefcase, GraduationCap, Award, Globe, Link2, FolderKanban, Code, Linkedin, Github, Twitter, Instagram, Youtube, Calendar, Flag, Target, DollarSign, Languages, Sparkles, Heart } from 'lucide-react';
+import { Mail, Phone, MapPin, Briefcase, GraduationCap, Award, Globe, Link2, FolderKanban, Code, Linkedin, Github, Twitter, Instagram, Youtube, Calendar, Flag, Target, DollarSign, Languages, Sparkles, Heart, BadgeCheck } from 'lucide-react';
 import { translations } from '../../types/resume';
 import { useResumeBasics, useResumeExperiences, useResumeEducation, useResumeProjects, useResumeSkills, useResumePhoto, useLanguage, useTemplate, useTheme } from '../../hooks/useResume';
 
@@ -20,11 +20,24 @@ function PreviewComponent() {
 
   const formatDate = useMemo(() => (date: string) => {
     if (!date) return '';
-    const [year, month] = date.split('-');
-    const months = language === 'en'
-      ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-      : ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    return `${months[parseInt(month) - 1]} ${year}`;
+    try {
+      const [year, month] = date.split('-');
+      const monthIndex = parseInt(month) - 1;
+      
+      // Validar índice de mês
+      if (isNaN(monthIndex) || monthIndex < 0 || monthIndex > 11 || !year) {
+        return '';
+      }
+      
+      const months = language === 'en'
+        ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        : ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      
+      return `${months[monthIndex]} ${year}`;
+    } catch (error) {
+      console.warn('Data inválida:', date);
+      return '';
+    }
   }, [language]);
 
   const isDark = theme === 'dark';
@@ -302,7 +315,7 @@ function PreviewComponent() {
         {certifications && certifications.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
-              <Award className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <BadgeCheck className="w-4 h-4 text-blue-600 flex-shrink-0" />
               <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                 {t.certifications}
               </h3>
@@ -502,7 +515,8 @@ function PreviewComponent() {
         {/* Habilitações Profissionais */}
         {certifications && certifications.length > 0 && (
           <div>
-            <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 ${isDark ? 'text-gray-300' : 'text-gray-900'} border-b ${isDark ? 'border-gray-700' : 'border-gray-300'} pb-1`}>
+            <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 ${isDark ? 'text-gray-300' : 'text-gray-900'} border-b ${isDark ? 'border-gray-700' : 'border-gray-300'} pb-1 flex items-center gap-2`}>
+              <BadgeCheck className="w-4 h-4" />
               {t.certifications}
             </h3>
             <div className="space-y-2 sm:space-y-3">
@@ -669,7 +683,8 @@ function PreviewComponent() {
         {/* Habilitações Profissionais */}
         {certifications && certifications.length > 0 && (
           <div>
-            <h3 className={`text-xs sm:text-sm font-mono font-bold mb-3 ${isDark ? 'text-green-400' : 'text-green-600'}`}>
+            <h3 className={`text-xs sm:text-sm font-mono font-bold mb-3 ${isDark ? 'text-green-400' : 'text-green-600'} flex items-center gap-2`}>
+              <BadgeCheck className="w-4 h-4" />
               {'>'} {t.certifications}
             </h3>
             <div className="space-y-2">
@@ -828,7 +843,8 @@ function PreviewComponent() {
             {/* Habilitações Profissionais */}
             {certifications && certifications.length > 0 && (
               <div>
-                <h3 className={`text-xs font-bold uppercase mb-2 ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>
+                <h3 className={`text-xs font-bold uppercase mb-2 ${isDark ? 'text-gray-200' : 'text-gray-900'} flex items-center gap-2`}>
+                  <BadgeCheck className="w-3 h-3" />
                   {t.certifications}
                 </h3>
                 <div className="space-y-1">
@@ -963,7 +979,8 @@ function PreviewComponent() {
         {/* Habilitações Profissionais */}
         {certifications && certifications.length > 0 && (
           <div>
-            <h3 className="text-xs sm:text-sm font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+            <h3 className="text-xs sm:text-sm font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 flex items-center gap-2">
+              <BadgeCheck className="w-4 h-4 text-purple-600" />
               {t.certifications}
             </h3>
             <div className="space-y-2">

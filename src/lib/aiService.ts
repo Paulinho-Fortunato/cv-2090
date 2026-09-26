@@ -40,9 +40,14 @@ class AIService {
   }
 
   private loadConfig() {
-    const storedModel = localStorage.getItem('openrouter-model');
-    if (storedModel) {
-      this.model = storedModel;
+    try {
+      const storedModel = localStorage.getItem('openrouter-model');
+      if (storedModel) {
+        this.model = storedModel;
+      }
+    } catch (error) {
+      console.warn('localStorage não disponível, usando modelo padrão:', error);
+      // Fallback: usar modelo padrão já definido
     }
   }
 
@@ -52,7 +57,12 @@ class AIService {
 
   setModel(modelId: string) {
     this.model = modelId;
-    localStorage.setItem('openrouter-model', modelId);
+    try {
+      localStorage.setItem('openrouter-model', modelId);
+    } catch (error) {
+      console.warn('Não foi possível salvar modelo em localStorage:', error);
+      // Fallback: modelo fica em memória apenas nesta sessão
+    }
   }
 
   getModel(): string {
@@ -138,7 +148,21 @@ Responda APENAS com o JSON, sem texto adicional.`;
       // Extrair JSON da resposta
       const jsonMatch = response.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          
+          // Validar estrutura mínima
+          if (Array.isArray(parsed) && parsed.length > 0 && 
+              parsed.every((item: any) => item.type && item.title && item.content)) {
+            return parsed;
+          } else {
+            console.warn('Resposta da IA com estrutura inesperada');
+            return this.getFallbackSuggestions(resumeData);
+          }
+        } catch (parseError) {
+          console.error('Erro ao fazer parse da resposta da IA:', parseError);
+          return this.getFallbackSuggestions(resumeData);
+        }
       }
 
       return this.getFallbackSuggestions(resumeData);

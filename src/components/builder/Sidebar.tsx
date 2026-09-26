@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { User, Briefcase, GraduationCap, Award, Download, Trash2, FileJson, Upload, FolderKanban } from 'lucide-react';
+import { User, Briefcase, GraduationCap, Award, Download, Trash2, FileJson, Upload, FolderKanban, BadgeCheck } from 'lucide-react';
 import { useResumeStore } from '../../lib/store';
 import { translations } from '../../types/resume';
 import { useActiveSection, useLanguage, useTheme, useProgress } from '../../hooks/useResume';
@@ -26,7 +26,7 @@ export function Sidebar({ onDownload }: SidebarProps) {
     { id: 'basics', label: t.basics, icon: User },
     { id: 'experience', label: t.experience, icon: Briefcase },
     { id: 'education', label: t.education, icon: GraduationCap },
-    { id: 'certifications', label: t.certifications, icon: Award },
+    { id: 'certifications', label: t.certifications, icon: BadgeCheck },
     { id: 'projects', label: t.projectsSection, icon: FolderKanban },
     { id: 'skills', label: t.skillsSection, icon: Award },
   ], [t]);

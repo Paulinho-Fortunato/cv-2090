@@ -1,19 +1,20 @@
 import { ResumeData } from '../types/resume';
 
 // OpenRouter API - https://openrouter.ai/
-// Oferece acesso a múltiplos modelos: GPT-4, Claude, Llama, Mistral, etc.
+// API Key configurada via variável de ambiente na Vercel
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 
 // Modelos disponíveis na OpenRouter
 export const AVAILABLE_MODELS = [
+  { id: 'meta-llama/llama-3-8b-instruct', name: 'Llama 3 8B', provider: 'Meta', free: true },
+  { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B', provider: 'Mistral', free: true },
   { id: 'openai/gpt-3.5-turbo', name: 'GPT-3.5 Turbo', provider: 'OpenAI', free: false },
   { id: 'openai/gpt-4', name: 'GPT-4', provider: 'OpenAI', free: false },
   { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', provider: 'OpenAI', free: false },
   { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', provider: 'Anthropic', free: false },
   { id: 'anthropic/claude-3-sonnet', name: 'Claude 3 Sonnet', provider: 'Anthropic', free: false },
-  { id: 'meta-llama/llama-3-8b-instruct', name: 'Llama 3 8B', provider: 'Meta', free: true },
   { id: 'meta-llama/llama-3-70b-instruct', name: 'Llama 3 70B', provider: 'Meta', free: false },
-  { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B', provider: 'Mistral', free: true },
   { id: 'mistralai/mixtral-8x7b-instruct', name: 'Mixtral 8x7B', provider: 'Mistral', free: false },
   { id: 'google/gemini-pro', name: 'Gemini Pro', provider: 'Google', free: false },
 ];
@@ -32,7 +33,6 @@ export interface CoverLetter {
 }
 
 class AIService {
-  private apiKey: string = '';
   private model: string = 'meta-llama/llama-3-8b-instruct'; // Modelo gratuito padrão
 
   constructor() {
@@ -40,24 +40,14 @@ class AIService {
   }
 
   private loadConfig() {
-    const storedKey = localStorage.getItem('openrouter-api-key');
     const storedModel = localStorage.getItem('openrouter-model');
-    
-    if (storedKey) {
-      this.apiKey = storedKey;
-    }
     if (storedModel) {
       this.model = storedModel;
     }
   }
 
-  setApiKey(key: string) {
-    this.apiKey = key;
-    localStorage.setItem('openrouter-api-key', key);
-  }
-
   getApiKey(): string {
-    return this.apiKey;
+    return OPENROUTER_API_KEY;
   }
 
   setModel(modelId: string) {
@@ -70,7 +60,7 @@ class AIService {
   }
 
   isConfigured(): boolean {
-    return this.apiKey.length > 0;
+    return OPENROUTER_API_KEY.length > 0;
   }
 
   private async makeRequest(messages: any[]): Promise<string> {
@@ -81,7 +71,7 @@ class AIService {
     const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': window.location.origin,
         'X-Title': 'CV Builder',

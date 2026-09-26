@@ -70,7 +70,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
       // Dynamic import para evitar problemas de inicialização
       const { pdf, Document, Page, Text, View, Image, StyleSheet } = await import('@react-pdf/renderer');
       
-      const { basics, experiences, education, projects, skills, photo } = useResumeStore.getState().resumeData;
+      const { basics, experiences, education, certifications, projects, skills, photo } = useResumeStore.getState().resumeData;
 
       const styles = StyleSheet.create({
         page: { padding: 30, fontFamily: 'Helvetica' },
@@ -149,6 +149,22 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
                     <Text style={styles.expDate}>
                       {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
                     </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {certifications && certifications.length > 0 && (
+              <View style={{ marginBottom: 15 }}>
+                <Text style={styles.sectionTitle}>HABILITACOES PROFISSIONAIS</Text>
+                {certifications.map((cert, i) => (
+                  <View key={i} style={styles.expItem}>
+                    <Text style={styles.expPosition}>{cert.name}</Text>
+                    <Text style={styles.expCompany}>{cert.institution}</Text>
+                    <Text style={styles.expDate}>
+                      {formatDate(cert.date)}{cert.duration ? ` • ${cert.duration}` : ''}
+                    </Text>
+                    {cert.description && <Text style={styles.summary}>{cert.description}</Text>}
                   </View>
                 ))}
               </View>

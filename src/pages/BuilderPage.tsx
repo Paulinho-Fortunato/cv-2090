@@ -4,6 +4,7 @@ import { Preview } from '../components/builder/Preview';
 import { BasicsForm } from '../components/builder/forms/BasicsForm';
 import { ExperienceForm } from '../components/builder/forms/ExperienceForm';
 import { EducationForm } from '../components/builder/forms/EducationForm';
+import { CertificationsForm } from '../components/builder/forms/CertificationsForm';
 import { ProjectsForm } from '../components/builder/forms/ProjectsForm';
 import { SkillsForm } from '../components/builder/forms/SkillsForm';
 import { DownloadModal } from '../components/ads/DownloadModal';
@@ -45,6 +46,7 @@ function BuilderContent() {
       case 'basics': return <BasicsForm />;
       case 'experience': return <ExperienceForm />;
       case 'education': return <EducationForm />;
+      case 'certifications': return <CertificationsForm />;
       case 'projects': return <ProjectsForm />;
       case 'skills': return <SkillsForm />;
       default: return <BasicsForm />;

@@ -2,6 +2,7 @@ export interface ResumeData {
   basics: Basics;
   experiences: Experience[];
   education: Education[];
+  certifications: Certification[];
   projects: Project[];
   skills: string[];
   photo: string;
@@ -69,6 +70,16 @@ export interface Project {
   technologies: string;
 }
 
+export interface Certification {
+  id: string;
+  name: string;
+  institution: string;
+  date: string;
+  duration: string;
+  description: string;
+  certificateUrl: string;
+}
+
 export const defaultResumeData: ResumeData = {
   basics: {
     fullName: '',
@@ -103,6 +114,7 @@ export const defaultResumeData: ResumeData = {
   },
   experiences: [],
   education: [],
+  certifications: [],
   projects: [],
   skills: [],
   photo: '',
@@ -116,6 +128,7 @@ export interface Translations {
   basics: string;
   experience: string;
   education: string;
+  certifications: string;
   skillsSection: string;
   projectsSection: string;
   downloadPdf: string;
@@ -199,6 +212,7 @@ export const translations: Record<Language, Translations> = {
     basics: 'Dados Pessoais',
     experience: 'Experiência',
     education: 'Educação',
+    certifications: 'Habilitações Profissionais',
     skillsSection: 'Habilidades',
     projectsSection: 'Projetos',
     downloadPdf: 'Baixar PDF',
@@ -278,6 +292,7 @@ export const translations: Record<Language, Translations> = {
     basics: 'Personal Info',
     experience: 'Experience',
     education: 'Education',
+    certifications: 'Professional Certifications',
     skillsSection: 'Skills',
     projectsSection: 'Projects',
     downloadPdf: 'Download PDF',
@@ -357,6 +372,7 @@ export const translations: Record<Language, Translations> = {
     basics: 'Datos Personales',
     experience: 'Experiencia',
     education: 'Educación',
+    certifications: 'Certificaciones Profesionales',
     skillsSection: 'Habilidades',
     projectsSection: 'Proyectos',
     downloadPdf: 'Descargar PDF',

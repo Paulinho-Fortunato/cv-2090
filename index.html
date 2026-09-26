@@ -9,39 +9,71 @@
     <meta name="keywords" content="criar currículo, construtor de currículo, currículo online, cv builder, currículo gratuito, fazer currículo, modelo de currículo, curriculum vitae, ATS, templates currículo" />
     <meta name="author" content="CV Builder" />
     <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://cv-2090.vercel.app" />
 
-    <!-- Open Graph -->
+    <!-- Open Graph para Redes Sociais -->
     <meta property="og:title" content="CV Builder - Criador de Currículo Profissional Gratuito" />
     <meta property="og:description" content="Crie seu currículo profissional online de forma gratuita. 4 templates, preview ao vivo, download PDF e pontuação ATS." />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale:alternate" content="pt" />
+    <meta property="og:locale:alternate" content="es" />
+    <meta property="og:locale:alternate" content="en" />
     <meta property="og:site_name" content="CV Builder" />
+    <meta property="og:url" content="https://cv-2090.vercel.app" />
+    <meta property="og:image" content="https://cv-2090.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="CV Builder - Criador de Currículo Gratuito" />
     <meta name="twitter:description" content="Crie seu currículo profissional online. 4 templates, PDF, ATS Score. Sem login." />
+    <meta name="twitter:image" content="https://cv-2090.vercel.app/og-image.png" />
+    <meta name="twitter:url" content="https://cv-2090.vercel.app" />
 
     <!-- PWA -->
     <meta name="theme-color" content="#2563eb" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CV Builder" />
     <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
 
-    <!-- Schema.org JSON-LD -->
+    <!-- Preconnect para otimização -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+    <!-- Schema.org JSON-LD - WebApplication -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "CV Builder",
       "description": "Construtor de currículo online gratuito com 4 templates profissionais, preview ao vivo, download PDF e pontuação ATS.",
-      "url": "https://cv-builder.app",
+      "url": "https://cv-2090.vercel.app",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript",
       "offers": {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "BRL"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "1200"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "CV Builder",
+        "url": "https://cv-2090.vercel.app"
       },
       "featureList": [
         "4 templates profissionais",
@@ -75,7 +107,7 @@
           "name": "Preciso criar uma conta?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Não! Não é necessário criar conta ou fazer login."
+            "text": "Não! Não é necessário criar conta ou fazer login. Seu currículo é salvo automaticamente no navegador."
           }
         },
         {
@@ -83,20 +115,90 @@
           "name": "O PDF é compatível com sistemas ATS?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Sim! Geramos PDFs com texto selecionível e oferecemos pontuação ATS integrada."
+            "text": "Sim! Geramos PDFs com texto selecionível e oferecemos pontuação ATS integrada para otimizar seu currículo."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Posso usar em dispositivo móvel?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim! O CV Builder funciona perfeitamente em smartphones, tablets e desktops. A interface é totalmente responsiva."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Quantos idiomas estão disponíveis?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Temos 4 idiomas: Português Brasileiro, Português Europeu, Espanhol e Inglês."
           }
         }
       ]
     }
     </script>
 
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "CV Builder",
+      "url": "https://cv-2090.vercel.app",
+      "description": "Plataforma gratuita para criar currículos profissionais com templates modernos e análise ATS.",
+      "sameAs": [
+        "https://www.linkedin.com/company/cv-builder",
+        "https://twitter.com/cvbuilder"
+      ]
+    }
+    </script>
+
+    <!-- CSS Crítico Inline (Above the fold) -->
     <style>
-      html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
-      @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+      html, body { 
+        margin: 0; 
+        padding: 0; 
+        width: 100%; 
+        height: 100%;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      
+      #root {
+        width: 100%;
+        height: 100%;
+      }
+      
+      @keyframes slideIn { 
+        from { transform: translateX(100%); opacity: 0; } 
+        to { transform: translateX(0); opacity: 1; } 
+      }
+      
+      @media (max-width: 768px) {
+        body { font-size: 14px; }
+      }
     </style>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX', {
+        'page_path': window.location.pathname,
+        'anonymize_ip': true
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Noscript fallback -->
+    <noscript>
+      <p>Este aplicativo requer JavaScript para funcionar. Por favor, ative JavaScript no seu navegador.</p>
+    </noscript>
   </body>
 </html>

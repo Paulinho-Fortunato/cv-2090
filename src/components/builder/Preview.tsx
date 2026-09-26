@@ -1,20 +1,18 @@
 import { memo } from 'react';
 import { useResumeStore } from '../../lib/store';
-import { Mail, Phone, MapPin, Briefcase, GraduationCap, Award, Globe, Link2, FolderKanban, User } from 'lucide-react';
+import { Mail, Phone, MapPin, Briefcase, GraduationCap, Award, Globe, Link2, FolderKanban } from 'lucide-react';
 import { translations } from '../../types/resume';
 
 function PreviewComponent() {
-  const { basics, experiences, education, projects, skills, photo, language, template, theme } = useResumeStore((state) => ({
-    basics: state.resumeData.basics,
-    experiences: state.resumeData.experiences,
-    education: state.resumeData.education,
-    projects: state.resumeData.projects,
-    skills: state.resumeData.skills,
-    photo: state.resumeData.photo,
-    language: state.language,
-    template: state.template,
-    theme: state.theme,
-  }));
+  const basics = useResumeStore((state) => state.resumeData.basics);
+  const experiences = useResumeStore((state) => state.resumeData.experiences);
+  const education = useResumeStore((state) => state.resumeData.education);
+  const projects = useResumeStore((state) => state.resumeData.projects);
+  const skills = useResumeStore((state) => state.resumeData.skills);
+  const photo = useResumeStore((state) => state.resumeData.photo);
+  const language = useResumeStore((state) => state.language);
+  const template = useResumeStore((state) => state.template);
+  const theme = useResumeStore((state) => state.theme);
 
   const t = translations[language];
 
@@ -34,7 +32,7 @@ function PreviewComponent() {
 
   const renderClassic = () => (
     <div className={`${bgClass} shadow-lg rounded-lg overflow-hidden`} style={{ width: '100%', maxWidth: '600px' }}>
-      <div className="p-6 border-b border-gray-200">
+      <div className={`p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
         <div className="flex items-center gap-4">
           {photo && <img src={photo} alt="" className="w-16 h-16 rounded-full object-cover" />}
           <div>
@@ -124,8 +122,11 @@ function PreviewComponent() {
               <Award className="w-4 h-4" />{t.skillsLabel}
             </h3>
             <div className="flex flex-wrap gap-1.5">
-              {skills.map((skill: string, index: number) => (
-                <span key={index} className={`${isDark ? 'bg-blue-900/30 text-blue-300 border-blue-800' : 'bg-blue-50 text-blue-700 border-blue-100'} px-2 py-0.5 rounded text-xs font-medium border`}>
+              {skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className={`${isDark ? 'bg-blue-900/30 text-blue-300 border-blue-800' : 'bg-blue-50 text-blue-700 border-blue-100'} px-2 py-0.5 rounded text-xs font-medium border`}
+                >
                   {skill}
                 </span>
               ))}
@@ -231,8 +232,11 @@ function PreviewComponent() {
               <h3 className="text-sm font-bold uppercase tracking-wide">{t.skillsLabel}</h3>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {skills.map((skill: string, index: number) => (
-                <span key={index} className={`${isDark ? 'bg-blue-900/30 text-blue-300 border-blue-800' : 'bg-blue-50 text-blue-700 border-blue-100'} px-2 py-0.5 rounded text-xs font-medium border`}>
+              {skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className={`${isDark ? 'bg-blue-900/30 text-blue-300 border-blue-800' : 'bg-blue-50 text-blue-700 border-blue-100'} px-2 py-0.5 rounded text-xs font-medium border`}
+                >
                   {skill}
                 </span>
               ))}
@@ -299,7 +303,7 @@ function PreviewComponent() {
           <div className="mt-6">
             <h3 className="text-xs font-bold uppercase mb-2">{t.skillsLabel}</h3>
             <div className="flex flex-wrap gap-1">
-              {skills.map((skill: string, i: number) => (
+              {skills.map((skill, i) => (
                 <span key={i} className="bg-white/20 px-2 py-0.5 rounded text-xs">{skill}</span>
               ))}
             </div>

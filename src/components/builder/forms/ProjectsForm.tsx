@@ -3,16 +3,13 @@ import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
 
 export function ProjectsForm() {
-  const { projects, addProject, updateProject, removeProject, reorderProjects, language, theme } =
-    useResumeStore((state) => ({
-      projects: state.resumeData.projects,
-      addProject: state.addProject,
-      updateProject: state.updateProject,
-      removeProject: state.removeProject,
-      reorderProjects: state.reorderProjects,
-      language: state.language,
-      theme: state.theme,
-    }));
+  const projects = useResumeStore((state) => state.resumeData.projects);
+  const addProject = useResumeStore((state) => state.addProject);
+  const updateProject = useResumeStore((state) => state.updateProject);
+  const removeProject = useResumeStore((state) => state.removeProject);
+  const reorderProjects = useResumeStore((state) => state.reorderProjects);
+  const language = useResumeStore((state) => state.language);
+  const theme = useResumeStore((state) => state.theme);
 
   const t = translations[language];
   const isDark = theme === 'dark';

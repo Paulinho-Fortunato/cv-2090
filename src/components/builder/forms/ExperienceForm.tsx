@@ -3,16 +3,13 @@ import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
 
 export function ExperienceForm() {
-  const { experiences, addExperience, updateExperience, removeExperience, reorderExperiences, language, theme } =
-    useResumeStore((state) => ({
-      experiences: state.resumeData.experiences,
-      addExperience: state.addExperience,
-      updateExperience: state.updateExperience,
-      removeExperience: state.removeExperience,
-      reorderExperiences: state.reorderExperiences,
-      language: state.language,
-      theme: state.theme,
-    }));
+  const experiences = useResumeStore((state) => state.resumeData.experiences);
+  const addExperience = useResumeStore((state) => state.addExperience);
+  const updateExperience = useResumeStore((state) => state.updateExperience);
+  const removeExperience = useResumeStore((state) => state.removeExperience);
+  const reorderExperiences = useResumeStore((state) => state.reorderExperiences);
+  const language = useResumeStore((state) => state.language);
+  const theme = useResumeStore((state) => state.theme);
 
   const t = translations[language];
   const isDark = theme === 'dark';

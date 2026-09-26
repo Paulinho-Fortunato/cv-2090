@@ -1,32 +1,20 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { User, Mail, Phone, MapPin, FileText, Briefcase, Globe, Link2, Camera, X, Info } from 'lucide-react';
 import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
-import { useToast } from '../../ui/Toast';
 
 export function BasicsForm() {
-  const { basics, updateBasics, photo, setPhoto, language, theme } = useResumeStore((state) => ({
-    basics: state.resumeData.basics,
-    updateBasics: state.updateBasics,
-    photo: state.resumeData.photo,
-    setPhoto: state.setPhoto,
-    language: state.language,
-    theme: state.theme,
-  }));
+  const basics = useResumeStore((state) => state.resumeData.basics);
+  const photo = useResumeStore((state) => state.resumeData.photo);
+  const updateBasics = useResumeStore((state) => state.updateBasics);
+  const setPhoto = useResumeStore((state) => state.setPhoto);
+  const language = useResumeStore((state) => state.language);
+  const theme = useResumeStore((state) => state.theme);
 
   const t = translations[language];
-  const toast = useToast();
   const isDark = theme === 'dark';
 
-  // Auto-save with debounce
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      // Data is already in store via individual field updates
-    }, 500);
-    return () => clearTimeout(timeout);
-  }, [basics]);
-
-  const handleChange = useCallback((field: keyof typeof basics, value: string) => {
+  const handleChange = useCallback((field: string, value: string) => {
     updateBasics({ [field]: value });
   }, [updateBasics]);
 

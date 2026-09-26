@@ -193,6 +193,10 @@ Seu CV Builder está pronto para produção!
 
 **URL de exemplo**: `https://cv-builder.vercel.app`
 
+**Importante**: O projeto usa HashRouter, então as URLs serão:
+- Landing page: `https://cv-builder.vercel.app` ou `https://cv-builder.vercel.app/#/`
+- Builder: `https://cv-builder.vercel.app/#/builder`
+
 **Funcionalidades ativas**:
 - ✅ 4 templates profissionais
 - ✅ Preview ao vivo

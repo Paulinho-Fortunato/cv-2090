@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Download, Clock, Printer, Share2, CheckCircle, Shield } from 'lucide-react';
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { useResumeStore } from '../../lib/store';
 import { translations } from '../../types/resume';
 
@@ -9,140 +8,34 @@ interface DownloadModalProps {
   onClose: () => void;
 }
 
-const styles = StyleSheet.create({
-  page: { padding: 30, fontFamily: 'Helvetica' },
-  header: { backgroundColor: '#2563eb', padding: 20, marginBottom: 15 },
-  name: { fontSize: 22, fontWeight: 'bold', color: '#ffffff' },
-  headline: { fontSize: 12, color: '#bfdbfe', marginTop: 4 },
-  contactRow: { flexDirection: 'row', marginTop: 10, flexWrap: 'wrap' },
-  contactText: { fontSize: 9, color: '#dbeafe', marginRight: 15 },
-  sectionTitle: { fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase', marginBottom: 8, marginTop: 15 },
-  summary: { fontSize: 9, color: '#374151', lineHeight: 1.5 },
-  expItem: { marginBottom: 10, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: '#bfdbfe' },
-  expPosition: { fontSize: 10, fontWeight: 'bold', color: '#111827' },
-  expCompany: { fontSize: 9, color: '#2563eb' },
-  expDate: { fontSize: 8, color: '#6b7280' },
-  expDescription: { fontSize: 8, color: '#4b5563', marginTop: 3 },
-  skillBadge: { backgroundColor: '#eff6ff', borderWidth: 1, borderColor: '#bfdbfe', borderRadius: 3, paddingHorizontal: 6, paddingVertical: 2, marginRight: 4, marginBottom: 4 },
-  skillText: { fontSize: 8, color: '#1d4ed8' },
-});
-
 function calculateATSScore() {
-  const { basics, experiences, education, projects, skills } = useResumeStore.getState().resumeData;
-  let score = 0;
-  const maxScore = 100;
+  try {
+    const { basics, experiences, education, projects, skills } = useResumeStore.getState().resumeData;
+    let score = 0;
+    const maxScore = 100;
 
-  if (basics.fullName.trim()) score += 15;
-  if (basics.headline.trim()) score += 10;
-  if (basics.email.trim() && basics.email.includes('@')) score += 10;
-  if (basics.phone.trim()) score += 5;
-  if (basics.location.trim()) score += 5;
-  if (basics.summary.trim().length > 50) score += 15;
-  else if (basics.summary.trim().length > 20) score += 8;
-  if (experiences.length > 0) {
-    score += Math.min(20, experiences.length * 7);
-    if (experiences.some((e) => e.description.length > 50)) score += 5;
+    if (basics.fullName.trim()) score += 15;
+    if (basics.headline.trim()) score += 10;
+    if (basics.email.trim() && basics.email.includes('@')) score += 10;
+    if (basics.phone.trim()) score += 5;
+    if (basics.location.trim()) score += 5;
+    if (basics.summary.trim().length > 50) score += 15;
+    else if (basics.summary.trim().length > 20) score += 8;
+    if (experiences.length > 0) {
+      score += Math.min(20, experiences.length * 7);
+      if (experiences.some((e) => e.description.length > 50)) score += 5;
+    }
+    if (education.length > 0) score += 10;
+    if (projects.length > 0) score += 5;
+    if (skills.length >= 5) score += 10;
+    else if (skills.length >= 3) score += 7;
+    else if (skills.length > 0) score += 4;
+
+    return Math.min(score, maxScore);
+  } catch (error) {
+    console.error('Error calculating ATS score:', error);
+    return 0;
   }
-  if (education.length > 0) score += 10;
-  if (projects.length > 0) score += 5;
-  if (skills.length >= 5) score += 10;
-  else if (skills.length >= 3) score += 7;
-  else if (skills.length > 0) score += 4;
-
-  return Math.min(score, maxScore);
-}
-
-function formatDate(date: string) {
-  if (!date) return '';
-  const [year, month] = date.split('-');
-  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  return `${months[parseInt(month) - 1]} ${year}`;
-}
-
-function ResumePDFContent() {
-  const { basics, experiences, education, projects, skills } = useResumeStore.getState().resumeData;
-
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <Text style={styles.name}>{basics.fullName || 'Seu Nome'}</Text>
-          <Text style={styles.headline}>{basics.headline || ''}</Text>
-          <View style={styles.contactRow}>
-            {basics.email && <Text style={styles.contactText}>{basics.email}</Text>}
-            {basics.phone && <Text style={styles.contactText}>{basics.phone}</Text>}
-            {basics.location && <Text style={styles.contactText}>{basics.location}</Text>}
-          </View>
-        </View>
-
-        {basics.summary && (
-          <View style={{ marginBottom: 15 }}>
-            <Text style={styles.sectionTitle}>RESUMO PROFISSIONAL</Text>
-            <Text style={styles.summary}>{basics.summary}</Text>
-          </View>
-        )}
-
-        {experiences.length > 0 && (
-          <View style={{ marginBottom: 15 }}>
-            <Text style={styles.sectionTitle}>EXPERIENCIA PROFISSIONAL</Text>
-            {experiences.map((exp, i) => (
-              <View key={i} style={styles.expItem}>
-                <Text style={styles.expPosition}>{exp.position}</Text>
-                <Text style={styles.expCompany}>{exp.company}</Text>
-                <Text style={styles.expDate}>
-                  {formatDate(exp.startDate)} - {exp.current ? 'Atual' : formatDate(exp.endDate)}
-                </Text>
-                {exp.description && <Text style={styles.expDescription}>{exp.description}</Text>}
-              </View>
-            ))}
-          </View>
-        )}
-
-        {education.length > 0 && (
-          <View style={{ marginBottom: 15 }}>
-            <Text style={styles.sectionTitle}>FORMACAO ACADEMICA</Text>
-            {education.map((edu, i) => (
-              <View key={i} style={styles.expItem}>
-                <Text style={styles.expPosition}>
-                  {edu.degree} {edu.field ? `- ${edu.field}` : ''}
-                </Text>
-                <Text style={styles.expCompany}>{edu.institution}</Text>
-                <Text style={styles.expDate}>
-                  {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {projects.length > 0 && (
-          <View style={{ marginBottom: 15 }}>
-            <Text style={styles.sectionTitle}>PROJETOS</Text>
-            {projects.map((proj, i) => (
-              <View key={i} style={styles.expItem}>
-                <Text style={styles.expPosition}>{proj.name}</Text>
-                {proj.technologies && <Text style={styles.expCompany}>{proj.technologies}</Text>}
-                {proj.description && <Text style={styles.expDescription}>{proj.description}</Text>}
-              </View>
-            ))}
-          </View>
-        )}
-
-        {skills.length > 0 && (
-          <View>
-            <Text style={styles.sectionTitle}>HABILIDADES</Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-              {skills.map((skill, i) => (
-                <View key={i} style={styles.skillBadge}>
-                  <Text style={styles.skillText}>{skill}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-      </Page>
-    </Document>
-  );
 }
 
 export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
@@ -171,13 +64,134 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
     return () => clearInterval(timer);
   }, [isOpen, resetModal]);
 
+  const handleDownloadPDF = async () => {
+    try {
+      // Dynamic import para evitar problemas de inicialização
+      const { pdf, Document, Page, Text, View, StyleSheet } = await import('@react-pdf/renderer');
+      
+      const { basics, experiences, education, projects, skills } = useResumeStore.getState().resumeData;
+
+      const styles = StyleSheet.create({
+        page: { padding: 30, fontFamily: 'Helvetica' },
+        header: { backgroundColor: '#2563eb', padding: 20, marginBottom: 15 },
+        name: { fontSize: 22, fontWeight: 'bold', color: '#ffffff' },
+        headline: { fontSize: 12, color: '#bfdbfe', marginTop: 4 },
+        contactText: { fontSize: 9, color: '#dbeafe', marginRight: 15 },
+        sectionTitle: { fontSize: 11, fontWeight: 'bold', color: '#1e40af', textTransform: 'uppercase' as const, marginBottom: 8, marginTop: 15 },
+        summary: { fontSize: 9, color: '#374151', lineHeight: 1.5 },
+        expItem: { marginBottom: 10, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: '#bfdbfe' },
+        expPosition: { fontSize: 10, fontWeight: 'bold' as const, color: '#111827' },
+        expCompany: { fontSize: 9, color: '#2563eb' },
+        expDate: { fontSize: 8, color: '#6b7280' },
+      });
+
+      const formatDate = (date: string) => {
+        if (!date) return '';
+        const [year, month] = date.split('-');
+        const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        return `${months[parseInt(month) - 1]} ${year}`;
+      };
+
+      const doc = (
+        <Document>
+          <Page size="A4" style={styles.page}>
+            <View style={styles.header}>
+              <Text style={styles.name}>{basics.fullName || 'Seu Nome'}</Text>
+              <Text style={styles.headline}>{basics.headline || ''}</Text>
+              <View style={{ flexDirection: 'row' as const, marginTop: 10 }}>
+                {basics.email && <Text style={styles.contactText}>{basics.email}</Text>}
+                {basics.phone && <Text style={styles.contactText}>{basics.phone}</Text>}
+                {basics.location && <Text style={styles.contactText}>{basics.location}</Text>}
+              </View>
+            </View>
+
+            {basics.summary && (
+              <View style={{ marginBottom: 15 }}>
+                <Text style={styles.sectionTitle}>RESUMO PROFISSIONAL</Text>
+                <Text style={styles.summary}>{basics.summary}</Text>
+              </View>
+            )}
+
+            {experiences.length > 0 && (
+              <View style={{ marginBottom: 15 }}>
+                <Text style={styles.sectionTitle}>EXPERIENCIA PROFISSIONAL</Text>
+                {experiences.map((exp, i) => (
+                  <View key={i} style={styles.expItem}>
+                    <Text style={styles.expPosition}>{exp.position}</Text>
+                    <Text style={styles.expCompany}>{exp.company}</Text>
+                    <Text style={styles.expDate}>
+                      {formatDate(exp.startDate)} - {exp.current ? 'Atual' : formatDate(exp.endDate)}
+                    </Text>
+                    {exp.description && <Text style={styles.summary}>{exp.description}</Text>}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {education.length > 0 && (
+              <View style={{ marginBottom: 15 }}>
+                <Text style={styles.sectionTitle}>FORMACAO ACADEMICA</Text>
+                {education.map((edu, i) => (
+                  <View key={i} style={styles.expItem}>
+                    <Text style={styles.expPosition}>{edu.degree} {edu.field ? `- ${edu.field}` : ''}</Text>
+                    <Text style={styles.expCompany}>{edu.institution}</Text>
+                    <Text style={styles.expDate}>
+                      {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {projects.length > 0 && (
+              <View style={{ marginBottom: 15 }}>
+                <Text style={styles.sectionTitle}>PROJETOS</Text>
+                {projects.map((proj, i) => (
+                  <View key={i} style={styles.expItem}>
+                    <Text style={styles.expPosition}>{proj.name}</Text>
+                    {proj.technologies && <Text style={styles.expCompany}>{proj.technologies}</Text>}
+                    {proj.description && <Text style={styles.summary}>{proj.description}</Text>}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {skills.length > 0 && (
+              <View>
+                <Text style={styles.sectionTitle}>HABILIDADES</Text>
+                <Text style={styles.summary}>{skills.join(', ')}</Text>
+              </View>
+            )}
+          </Page>
+        </Document>
+      );
+
+      const blob = await pdf(doc).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'curriculo.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Erro ao gerar PDF. Tente usar a opção de impressão (Ctrl+P) e salvar como PDF.');
+    }
+  };
+
   const handleShare = () => {
-    const { resumeData } = useResumeStore.getState();
-    const encoded = btoa(encodeURIComponent(JSON.stringify(resumeData)));
-    const url = `${window.location.origin}/builder?data=${encoded}`;
-    navigator.clipboard.writeText(url);
-    setShowShareLink(true);
-    setTimeout(() => setShowShareLink(false), 3000);
+    try {
+      const { resumeData } = useResumeStore.getState();
+      const encoded = btoa(encodeURIComponent(JSON.stringify(resumeData)));
+      const url = `${window.location.origin}/#/builder?data=${encoded}`;
+      navigator.clipboard.writeText(url);
+      setShowShareLink(true);
+      setTimeout(() => setShowShareLink(false), 3000);
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
   };
 
   const handlePrint = () => {
@@ -255,18 +269,13 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                <PDFDownloadLink
-                  document={<ResumePDFContent />}
-                  fileName="curriculo.pdf"
+                <button
+                  onClick={handleDownloadPDF}
                   className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
-                  {({ loading }) => (
-                    <>
-                      <Download className="w-5 h-5" />
-                      {loading ? 'Preparando PDF...' : t.downloadPdf}
-                    </>
-                  )}
-                </PDFDownloadLink>
+                  <Download className="w-5 h-5" />
+                  {t.downloadPdf}
+                </button>
 
                 <div className="flex gap-2">
                   <button

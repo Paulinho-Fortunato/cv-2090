@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Award, Plus, X } from 'lucide-react';
 import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
+import { useResumeSkills, useLanguage, useTheme } from '../../../hooks/useResume';
 
 export function SkillsForm() {
-  const skills = useResumeStore((state) => state.resumeData.skills);
+  const skills = useResumeSkills();
   const addSkill = useResumeStore((state) => state.addSkill);
   const removeSkill = useResumeStore((state) => state.removeSkill);
-  const language = useResumeStore((state) => state.language);
-  const theme = useResumeStore((state) => state.theme);
+  const language = useLanguage();
+  const theme = useTheme();
 
   const [newSkill, setNewSkill] = useState('');
   const t = translations[language];

@@ -1,61 +1,37 @@
+import { useMemo, useState, useCallback } from 'react';
 import { User, Briefcase, GraduationCap, Award, Download, Trash2, FileJson, Upload, FolderKanban } from 'lucide-react';
 import { useResumeStore } from '../../lib/store';
-import { useState } from 'react';
 import { translations } from '../../types/resume';
+import { useActiveSection, useLanguage, useTheme, useProgress } from '../../hooks/useResume';
 
 interface SidebarProps {
   onDownload: () => void;
 }
 
 export function Sidebar({ onDownload }: SidebarProps) {
-  const activeSection = useResumeStore((state) => state.activeSection);
+  const activeSection = useActiveSection();
   const setActiveSection = useResumeStore((state) => state.setActiveSection);
   const resetAll = useResumeStore((state) => state.resetAll);
-  const resumeData = useResumeStore((state) => state.resumeData);
   const importData = useResumeStore((state) => state.importData);
-  const theme = useResumeStore((state) => state.theme);
   const setTheme = useResumeStore((state) => state.setTheme);
-  const language = useResumeStore((state) => state.language);
+  const language = useLanguage();
+  const theme = useTheme();
+  const progress = useProgress();
 
   const t = translations[language];
   const [showConfirm, setShowConfirm] = useState(false);
+  const isDark = theme === 'dark';
 
-  const sections = [
+  const sections = useMemo(() => [
     { id: 'basics', label: t.basics, icon: User },
     { id: 'experience', label: t.experience, icon: Briefcase },
     { id: 'education', label: t.education, icon: GraduationCap },
     { id: 'projects', label: t.projectsSection, icon: FolderKanban },
     { id: 'skills', label: t.skillsSection, icon: Award },
-  ];
+  ], [t]);
 
-  // Progress calculation
-  const calculateProgress = () => {
-    let total = 0;
-    let filled = 0;
-    const { basics, experiences, education, projects, skills } = resumeData;
-
-    const basicsFields = [basics.fullName, basics.headline, basics.email, basics.phone, basics.location, basics.summary];
-    total += basicsFields.length;
-    filled += basicsFields.filter((f) => f.trim() !== '').length;
-
-    total += 1;
-    if (experiences.length > 0 && experiences.some((e) => e.company && e.position)) filled += 1;
-
-    total += 1;
-    if (education.length > 0 && education.some((e) => e.institution && e.degree)) filled += 1;
-
-    total += 1;
-    if (projects.length > 0 && projects.some((p) => p.name)) filled += 1;
-
-    total += 1;
-    if (skills.length >= 3) filled += 1;
-
-    return Math.round((filled / total) * 100);
-  };
-
-  const progress = calculateProgress();
-
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
+    const resumeData = useResumeStore.getState().resumeData;
     const jsonStr = JSON.stringify(resumeData, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -64,9 +40,9 @@ export function Sidebar({ onDownload }: SidebarProps) {
     a.download = 'curriculo.json';
     a.click();
     URL.revokeObjectURL(url);
-  };
+  }, []);
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -80,9 +56,12 @@ export function Sidebar({ onDownload }: SidebarProps) {
       };
       reader.readAsText(file);
     }
-  };
+  }, [importData]);
 
-  const isDark = theme === 'dark';
+  const handleReset = useCallback(() => {
+    resetAll();
+    setShowConfirm(false);
+  }, [resetAll]);
 
   return (
     <div className={`w-64 border-r flex flex-col h-full ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
@@ -184,7 +163,7 @@ export function Sidebar({ onDownload }: SidebarProps) {
             </p>
             <div className="flex gap-2">
               <button
-                onClick={() => { resetAll(); setShowConfirm(false); }}
+                onClick={handleReset}
                 className="flex-1 bg-red-600 text-white py-1.5 px-3 rounded text-xs font-medium hover:bg-red-700"
               >
                 {t.confirm}

@@ -8,12 +8,15 @@ import { CertificationsForm } from '../components/builder/forms/CertificationsFo
 import { ProjectsForm } from '../components/builder/forms/ProjectsForm';
 import { SkillsForm } from '../components/builder/forms/SkillsForm';
 import { DownloadModal } from '../components/ads/DownloadModal';
+import { ResumeManagerModal } from '../components/ads/ResumeManagerModal';
+import { ATSAnalysisModal } from '../components/ads/ATSAnalysisModal';
 import { MobileToolbar } from '../components/builder/MobileToolbar';
 import { useResumeStore } from '../lib/store';
-import { Eye, EyeOff, FileText, Globe, Layout } from 'lucide-react';
+import { Eye, EyeOff, FileText, Globe, Layout, FolderOpen, Target, Undo2, Redo2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { translations, TemplateId, Language } from '../types/resume';
 import { useActiveSection, useLanguage, useTheme, useTemplate } from '../hooks/useResume';
+import { useUndoRedo } from '../hooks/useUndoRedo';
 
 function BuilderContent() {
   const activeSection = useActiveSection();
@@ -26,7 +29,11 @@ function BuilderContent() {
   const template = useTemplate();
   
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [showResumeManager, setShowResumeManager] = useState(false);
+  const [showATSAnalysis, setShowATSAnalysis] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+
+  const { canUndo, canRedo, undo, redo } = useUndoRedo();
 
   const t = translations[language];
   const isDark = theme === 'dark';
@@ -132,6 +139,60 @@ function BuilderContent() {
                 </select>
               </div>
               <div className="flex items-center gap-2">
+                {/* Undo/Redo Buttons */}
+                <button
+                  onClick={undo}
+                  disabled={!canUndo}
+                  className={`p-2 rounded-lg transition-colors ${
+                    canUndo
+                      ? isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                      : 'opacity-30 cursor-not-allowed'
+                  }`}
+                  title="Desfazer (Ctrl+Z)"
+                >
+                  <Undo2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={redo}
+                  disabled={!canRedo}
+                  className={`p-2 rounded-lg transition-colors ${
+                    canRedo
+                      ? isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                      : 'opacity-30 cursor-not-allowed'
+                  }`}
+                  title="Refazer (Ctrl+Y)"
+                >
+                  <Redo2 className="w-4 h-4" />
+                </button>
+
+                <div className={`w-px h-6 ${isDark ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
+                {/* Resume Manager Button */}
+                <button
+                  onClick={() => setShowResumeManager(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                  title="Gerenciar Currículos"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  <span className="hidden sm:inline">Currículos</span>
+                </button>
+
+                {/* ATS Analysis Button */}
+                <button
+                  onClick={() => setShowATSAnalysis(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                  title="Análise ATS"
+                >
+                  <Target className="w-4 h-4" />
+                  <span className="hidden sm:inline">ATS</span>
+                </button>
+
+                <div className={`w-px h-6 ${isDark ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
                 <Globe className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                 <select
                   value={language}
@@ -189,6 +250,14 @@ function BuilderContent() {
       <MobileToolbar onDownload={handleDownload} />
 
       <DownloadModal isOpen={showDownloadModal} onClose={handleCloseModal} />
+      <ResumeManagerModal 
+        isOpen={showResumeManager} 
+        onClose={() => setShowResumeManager(false)} 
+      />
+      <ATSAnalysisModal 
+        isOpen={showATSAnalysis} 
+        onClose={() => setShowATSAnalysis(false)} 
+      />
     </div>
   );
 }

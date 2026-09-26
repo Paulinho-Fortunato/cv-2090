@@ -19,6 +19,10 @@ export function useResumeEducation() {
   return useResumeStore((state) => state.resumeData.education);
 }
 
+export function useResumeCertifications() {
+  return useResumeStore((state) => state.resumeData.certifications);
+}
+
 export function useResumeProjects() {
   return useResumeStore((state) => state.resumeData.projects);
 }

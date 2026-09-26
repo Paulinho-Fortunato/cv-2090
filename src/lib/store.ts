@@ -5,6 +5,7 @@ import {
   defaultResumeData,
   Experience,
   Education,
+  Certification,
   Project,
   TemplateId,
   Language,
@@ -27,6 +28,10 @@ interface ResumeStore {
   updateEducation: (id: string, education: Partial<Education>) => void;
   removeEducation: (id: string) => void;
   reorderEducation: (fromIndex: number, toIndex: number) => void;
+  addCertification: () => void;
+  updateCertification: (id: string, certification: Partial<Certification>) => void;
+  removeCertification: (id: string) => void;
+  reorderCertifications: (fromIndex: number, toIndex: number) => void;
   addProject: () => void;
   updateProject: (id: string, project: Partial<Project>) => void;
   removeProject: (id: string) => void;
@@ -80,6 +85,7 @@ const migrateResumeData = (data: any): ResumeData => {
     },
     experiences: Array.isArray(data.experiences) ? data.experiences : [],
     education: Array.isArray(data.education) ? data.education : [],
+    certifications: Array.isArray(data.certifications) ? data.certifications : [],
     projects: Array.isArray(data.projects) ? data.projects : [],
     skills: Array.isArray(data.skills) ? data.skills : [],
     photo: data.photo || '',
@@ -197,6 +203,51 @@ export const useResumeStore = create<ResumeStore>()(
           const [moved] = newEducation.splice(fromIndex, 1);
           newEducation.splice(toIndex, 0, moved);
           return { resumeData: { ...state.resumeData, education: newEducation } };
+        }),
+
+      addCertification: () =>
+        set((state) => ({
+          resumeData: {
+            ...state.resumeData,
+            certifications: [
+              ...state.resumeData.certifications,
+              {
+                id: generateId(),
+                name: '',
+                institution: '',
+                date: '',
+                duration: '',
+                description: '',
+                certificateUrl: '',
+              },
+            ],
+          },
+        })),
+
+      updateCertification: (id, certification) =>
+        set((state) => ({
+          resumeData: {
+            ...state.resumeData,
+            certifications: state.resumeData.certifications.map((cert) =>
+              cert.id === id ? { ...cert, ...certification } : cert
+            ),
+          },
+        })),
+
+      removeCertification: (id) =>
+        set((state) => ({
+          resumeData: {
+            ...state.resumeData,
+            certifications: state.resumeData.certifications.filter((cert) => cert.id !== id),
+          },
+        })),
+
+      reorderCertifications: (fromIndex, toIndex) =>
+        set((state) => {
+          const newCertifications = [...state.resumeData.certifications];
+          const [moved] = newCertifications.splice(fromIndex, 1);
+          newCertifications.splice(toIndex, 0, moved);
+          return { resumeData: { ...state.resumeData, certifications: newCertifications } };
         }),
 
       addProject: () =>

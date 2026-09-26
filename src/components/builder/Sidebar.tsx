@@ -26,6 +26,7 @@ export function Sidebar({ onDownload }: SidebarProps) {
     { id: 'basics', label: t.basics, icon: User },
     { id: 'experience', label: t.experience, icon: Briefcase },
     { id: 'education', label: t.education, icon: GraduationCap },
+    { id: 'certifications', label: t.certifications, icon: Award },
     { id: 'projects', label: t.projectsSection, icon: FolderKanban },
     { id: 'skills', label: t.skillsSection, icon: Award },
   ], [t]);

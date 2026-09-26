@@ -8,6 +8,7 @@ function PreviewComponent() {
   const basics = useResumeBasics();
   const experiences = useResumeExperiences();
   const education = useResumeEducation();
+  const certifications = useResumeStore((state) => state.resumeData.certifications);
   const projects = useResumeProjects();
   const skills = useResumeSkills();
   const photo = useResumePhoto();
@@ -296,6 +297,43 @@ function PreviewComponent() {
             </div>
           </div>
         )}
+
+        {/* Habilitações Profissionais */}
+        {certifications && certifications.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-2 sm:mb-3">
+              <Award className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wide ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                {t.certifications}
+              </h3>
+            </div>
+            <div className="space-y-2 sm:space-y-3">
+              {certifications.map((cert) => (
+                <div key={cert.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                        {cert.name}
+                      </p>
+                      <p className="text-xs text-blue-600 font-medium truncate">
+                        {cert.institution}
+                      </p>
+                    </div>
+                    <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} whitespace-nowrap flex-shrink-0`}>
+                      {formatDate(cert.date)}
+                      {cert.duration && ` • ${cert.duration}`}
+                    </span>
+                  </div>
+                  {cert.description && (
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed line-clamp-2`}>
+                      {cert.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {projects.length > 0 && (
           <div>
@@ -460,6 +498,40 @@ function PreviewComponent() {
             </div>
           </div>
         )}
+
+        {/* Habilitações Profissionais */}
+        {certifications && certifications.length > 0 && (
+          <div>
+            <h3 className={`text-xs sm:text-sm font-bold uppercase tracking-wider mb-3 ${isDark ? 'text-gray-300' : 'text-gray-900'} border-b ${isDark ? 'border-gray-700' : 'border-gray-300'} pb-1`}>
+              {t.certifications}
+            </h3>
+            <div className="space-y-2 sm:space-y-3">
+              {certifications.map((cert) => (
+                <div key={cert.id}>
+                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                        {cert.name}
+                      </p>
+                      <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                        {cert.institution}
+                      </p>
+                    </div>
+                    <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'} whitespace-nowrap flex-shrink-0`}>
+                      {formatDate(cert.date)}
+                      {cert.duration && ` • ${cert.duration}`}
+                    </span>
+                  </div>
+                  {cert.description && (
+                    <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-700'} mt-1 leading-relaxed`}>
+                      {cert.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {skills.length > 0 && (
           <div>
@@ -589,6 +661,32 @@ function PreviewComponent() {
                 >
                   {skill}
                 </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Habilitações Profissionais */}
+        {certifications && certifications.length > 0 && (
+          <div>
+            <h3 className={`text-xs sm:text-sm font-mono font-bold mb-3 ${isDark ? 'text-green-400' : 'text-green-600'}`}>
+              {'>'} {t.certifications}
+            </h3>
+            <div className="space-y-2">
+              {certifications.map((cert) => (
+                <div key={cert.id} className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <p className={`text-xs sm:text-sm font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                    {cert.name}
+                  </p>
+                  <p className={`text-xs font-mono ${isDark ? 'text-green-400' : 'text-green-600'} truncate`}>
+                    @ {cert.institution}
+                  </p>
+                  {cert.date && (
+                    <p className={`text-xs font-mono ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                      {formatDate(cert.date)}{cert.duration && ` • ${cert.duration}`}
+                    </p>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -726,6 +824,27 @@ function PreviewComponent() {
                 </div>
               </div>
             )}
+
+            {/* Habilitações Profissionais */}
+            {certifications && certifications.length > 0 && (
+              <div>
+                <h3 className={`text-xs font-bold uppercase mb-2 ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>
+                  {t.certifications}
+                </h3>
+                <div className="space-y-1">
+                  {certifications.slice(0, 3).map((cert) => (
+                    <div key={cert.id}>
+                      <p className={`text-xs font-semibold ${isDark ? 'text-gray-200' : 'text-gray-900'} truncate`}>
+                        {cert.name}
+                      </p>
+                      <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                        {cert.institution} • {formatDate(cert.date)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {projects.length > 0 && (
               <div>
@@ -833,6 +952,32 @@ function PreviewComponent() {
                   {exp.description && (
                     <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed line-clamp-2`}>
                       {exp.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Habilitações Profissionais */}
+        {certifications && certifications.length > 0 && (
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+              {t.certifications}
+            </h3>
+            <div className="space-y-2">
+              {certifications.map((cert) => (
+                <div key={cert.id} className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-3 rounded-lg">
+                  <p className={`text-xs sm:text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                    {cert.name}
+                  </p>
+                  <p className="text-xs text-purple-600 truncate">
+                    {cert.institution}
+                  </p>
+                  {cert.date && (
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {formatDate(cert.date)}{cert.duration && ` • ${cert.duration}`}
                     </p>
                   )}
                 </div>

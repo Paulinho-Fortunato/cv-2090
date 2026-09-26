@@ -65,7 +65,7 @@ export const defaultResumeData: ResumeData = {
   photo: '',
 };
 
-export type TemplateId = 'modern' | 'classic' | 'creative' | 'minimal';
+export type TemplateId = 'modern' | 'executive' | 'tech' | 'compact' | 'creative';
 
 export type Language = 'pt' | 'en' | 'es';
 

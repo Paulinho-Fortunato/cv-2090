@@ -53,8 +53,9 @@ function BuilderContent() {
 
   const templates: { id: TemplateId; label: string }[] = [
     { id: 'modern', label: 'Moderno' },
-    { id: 'classic', label: 'Clássico' },
-    { id: 'minimal', label: 'Minimalista' },
+    { id: 'executive', label: 'Executivo' },
+    { id: 'tech', label: 'Tech/Dev' },
+    { id: 'compact', label: 'Compacto' },
     { id: 'creative', label: 'Criativo' },
   ];
 

@@ -3,6 +3,8 @@ import { User, Mail, Phone, MapPin, FileText, Briefcase, Globe, Link2, Camera, X
 import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
 import { useShallow } from 'zustand/react/shallow';
+import { AutoComplete, jobTitleSuggestions } from '../../ui/AutoComplete';
+import { useFieldValidation, validationRules } from '../../../hooks/useFieldValidation';
 
 export function BasicsForm() {
   const { basics, photo, language, theme } = useResumeStore(
@@ -85,7 +87,7 @@ export function BasicsForm() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="basics-form">
       <div className="flex items-center gap-3 mb-6">
         <User className="w-5 h-5 text-blue-600" />
         <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.basics}</h2>
@@ -152,15 +154,12 @@ export function BasicsForm() {
               </span>
             </span>
           </label>
-          <div className="relative">
-            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              value={basics.headline}
-              onChange={(e) => handleChange('headline', e.target.value)}
-              className={inputClass}
-              placeholder="Cargo Desejado"
-            />
-          </div>
+          <AutoComplete
+            value={basics.headline}
+            onChange={(value) => handleChange('headline', value)}
+            suggestions={jobTitleSuggestions}
+            placeholder="Cargo Desejado"
+          />
         </div>
 
         <div>

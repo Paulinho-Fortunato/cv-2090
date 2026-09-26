@@ -13,72 +13,59 @@ export interface SavedResume {
 
 interface ResumeManagerStore {
   resumes: SavedResume[];
-  currentResumeId: string | null;
+  currentResumeId: string;
   
-  createResume: (name: string) => string;
+  // Actions
+  createResume: (name: string) => void;
   deleteResume: (id: string) => void;
   renameResume: (id: string, name: string) => void;
+  duplicateResume: (id: string) => void;
   switchResume: (id: string) => void;
-  duplicateResume: (id: string) => string;
   updateCurrentResume: (data: ResumeData) => void;
   getCurrentResume: () => SavedResume | null;
-  setCurrentAsDefault: () => void;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
 
+const defaultResume: SavedResume = {
+  id: 'default',
+  name: 'Meu Primeiro Currículo',
+  data: defaultResumeData,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  isDefault: true,
+};
+
 export const useResumeManager = create<ResumeManagerStore>()(
   persist(
     (set, get) => ({
-      resumes: [
-        {
-          id: 'default',
-          name: 'Meu Primeiro Currículo',
-          data: defaultResumeData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          isDefault: true,
-        },
-      ],
+      resumes: [defaultResume],
       currentResumeId: 'default',
 
       createResume: (name) => {
-        const id = generateId();
         const newResume: SavedResume = {
-          id,
+          id: generateId(),
           name,
           data: defaultResumeData,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           isDefault: false,
         };
-
         set((state) => ({
           resumes: [...state.resumes, newResume],
-          currentResumeId: id,
+          currentResumeId: newResume.id,
         }));
-
-        return id;
       },
 
       deleteResume: (id) => {
         set((state) => {
-          const resumeToDelete = state.resumes.find((r) => r.id === id);
-          if (resumeToDelete?.isDefault) {
-            alert('Não é possível excluir o currículo padrão.');
-            return state;
-          }
-
-          const newResumes = state.resumes.filter((r) => r.id !== id);
-          const newCurrentId =
-            state.currentResumeId === id
-              ? newResumes[0]?.id || null
-              : state.currentResumeId;
-
-          return {
-            resumes: newResumes,
-            currentResumeId: newCurrentId,
-          };
+          const resumes = state.resumes.filter((r) => r.id !== id);
+          // Se deletou o atual, volta para o primeiro
+          const currentResumeId = state.currentResumeId === id 
+            ? (resumes[0]?.id || 'default')
+            : state.currentResumeId;
+          
+          return { resumes, currentResumeId };
         });
       },
 
@@ -90,21 +77,15 @@ export const useResumeManager = create<ResumeManagerStore>()(
         }));
       },
 
-      switchResume: (id) => {
-        set({ currentResumeId: id });
-      },
-
       duplicateResume: (id) => {
-        const state = get();
-        const resumeToDuplicate = state.resumes.find((r) => r.id === id);
-        if (!resumeToDuplicate) return '';
+        const resumeToDuplicate = get().resumes.find((r) => r.id === id);
+        if (!resumeToDuplicate) return;
 
         const newId = generateId();
-        const copiedData = JSON.parse(JSON.stringify(resumeToDuplicate.data));
         const duplicatedResume: SavedResume = {
           id: newId,
           name: `${resumeToDuplicate.name} (Cópia)`,
-          data: copiedData,
+          data: JSON.parse(JSON.stringify(resumeToDuplicate.data)),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           isDefault: false,
@@ -114,8 +95,10 @@ export const useResumeManager = create<ResumeManagerStore>()(
           resumes: [...state.resumes, duplicatedResume],
           currentResumeId: newId,
         }));
+      },
 
-        return newId;
+      switchResume: (id) => {
+        set({ currentResumeId: id });
       },
 
       updateCurrentResume: (data) => {
@@ -129,21 +112,12 @@ export const useResumeManager = create<ResumeManagerStore>()(
       },
 
       getCurrentResume: () => {
-        const state = get();
-        return state.resumes.find((r) => r.id === state.currentResumeId) || null;
-      },
-
-      setCurrentAsDefault: () => {
-        set((state) => ({
-          resumes: state.resumes.map((r) => ({
-            ...r,
-            isDefault: r.id === state.currentResumeId,
-          })),
-        }));
+        const { resumes, currentResumeId } = get();
+        return resumes.find((r) => r.id === currentResumeId) || null;
       },
     }),
     {
-      name: 'cv-builder-multi-resumes',
+      name: 'cv-builder-resumes',
     }
   )
 );

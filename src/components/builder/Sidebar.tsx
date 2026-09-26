@@ -110,6 +110,7 @@ export function Sidebar({ onDownload }: SidebarProps) {
         <button
           onClick={onDownload}
           className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+          data-tour="download-button"
         >
           <Download className="w-4 h-4" />
           {t.downloadPdf}

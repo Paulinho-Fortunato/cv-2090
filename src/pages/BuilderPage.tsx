@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Sidebar } from '../components/builder/Sidebar';
-import { Preview } from '../components/builder/Preview';
+import { AnimatedPreview } from '../components/builder/AnimatedPreview';
 import { BasicsForm } from '../components/builder/forms/BasicsForm';
 import { ExperienceForm } from '../components/builder/forms/ExperienceForm';
 import { EducationForm } from '../components/builder/forms/EducationForm';
@@ -8,12 +8,18 @@ import { CertificationsForm } from '../components/builder/forms/CertificationsFo
 import { ProjectsForm } from '../components/builder/forms/ProjectsForm';
 import { SkillsForm } from '../components/builder/forms/SkillsForm';
 import { DownloadModal } from '../components/ads/DownloadModal';
+import { ResumeManagerModal } from '../components/ads/ResumeManagerModal';
+import { ATSAnalysisModal } from '../components/ads/ATSAnalysisModal';
+import { FullscreenPreview } from '../components/ads/FullscreenPreview';
+import { VersionComparison } from '../components/ads/VersionComparison';
 import { MobileToolbar } from '../components/builder/MobileToolbar';
+import { GuidedTour, useGuidedTour } from '../components/ui/GuidedTour';
 import { useResumeStore } from '../lib/store';
-import { Eye, EyeOff, FileText, Globe, Layout } from 'lucide-react';
+import { Eye, EyeOff, FileText, Globe, Layout, FolderOpen, Target, Undo2, Redo2, Maximize2, GitCompare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { translations, TemplateId, Language } from '../types/resume';
 import { useActiveSection, useLanguage, useTheme, useTemplate } from '../hooks/useResume';
+import { useUndoRedo } from '../hooks/useUndoRedo';
 
 function BuilderContent() {
   const activeSection = useActiveSection();
@@ -26,7 +32,29 @@ function BuilderContent() {
   const template = useTemplate();
   
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [showResumeManager, setShowResumeManager] = useState(false);
+  const [showATSAnalysis, setShowATSAnalysis] = useState(false);
+  const [showFullscreenPreview, setShowFullscreenPreview] = useState(false);
+  const [showVersionComparison, setShowVersionComparison] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+
+  const { canUndo, canRedo, undo, redo } = useUndoRedo();
+  const { isActive: isTourActive, completeTour, skipTour, restartTour } = useGuidedTour();
+  
+  // Version history for comparison
+  const [versionHistory, setVersionHistory] = useState<any[]>([]);
+  const resumeData = useResumeStore((state) => state.resumeData);
+  
+  // Save version snapshot every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVersionHistory(prev => {
+        const newHistory = [...prev, JSON.parse(JSON.stringify(resumeData))];
+        return newHistory.slice(-10); // Keep last 10 versions
+      });
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [resumeData]);
 
   const t = translations[language];
   const isDark = theme === 'dark';
@@ -132,6 +160,89 @@ function BuilderContent() {
                 </select>
               </div>
               <div className="flex items-center gap-2">
+                {/* Undo/Redo Buttons */}
+                <div className="flex items-center gap-1" data-tour="undo-redo">
+                  <button
+                    onClick={undo}
+                    disabled={!canUndo}
+                    className={`p-2 rounded-lg transition-colors ${
+                      canUndo
+                        ? isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                        : 'opacity-30 cursor-not-allowed'
+                    }`}
+                    title="Desfazer (Ctrl+Z)"
+                  >
+                    <Undo2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={redo}
+                    disabled={!canRedo}
+                    className={`p-2 rounded-lg transition-colors ${
+                      canRedo
+                        ? isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                        : 'opacity-30 cursor-not-allowed'
+                    }`}
+                    title="Refazer (Ctrl+Y)"
+                  >
+                    <Redo2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className={`w-px h-6 ${isDark ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
+                {/* Resume Manager Button */}
+                <button
+                  onClick={() => setShowResumeManager(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                  title="Gerenciar Currículos"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  <span className="hidden sm:inline">Currículos</span>
+                </button>
+
+                {/* ATS Analysis Button */}
+                <button
+                  onClick={() => setShowATSAnalysis(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                  title="Análise ATS"
+                  data-tour="ats-button"
+                >
+                  <Target className="w-4 h-4" />
+                  <span className="hidden sm:inline">ATS</span>
+                </button>
+
+                {/* Fullscreen Preview Button */}
+                <button
+                  onClick={() => setShowFullscreenPreview(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                  title="Preview em Tela Cheia"
+                >
+                  <Maximize2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Tela Cheia</span>
+                </button>
+
+                {/* Version Comparison Button */}
+                {versionHistory.length > 0 && (
+                  <button
+                    onClick={() => setShowVersionComparison(true)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                    }`}
+                    title="Comparar Versões"
+                  >
+                    <GitCompare className="w-4 h-4" />
+                    <span className="hidden sm:inline">Comparar</span>
+                  </button>
+                )}
+
+                <div className={`w-px h-6 ${isDark ? 'bg-gray-700' : 'bg-gray-300'}`} />
+
                 <Globe className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                 <select
                   value={language}
@@ -161,9 +272,9 @@ function BuilderContent() {
 
         {/* Preview Panel - Desktop */}
         {showPreview && (
-          <div className={`hidden lg:block w-[600px] border-l overflow-y-auto p-6 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'}`}>
+          <div className={`hidden lg:block w-[600px] border-l overflow-y-auto p-6 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'}`} data-tour="preview">
             <div className="sticky top-0">
-              <Preview />
+              <AnimatedPreview />
             </div>
           </div>
         )}
@@ -180,7 +291,7 @@ function BuilderContent() {
                 Voltar ao Editor
               </button>
             </div>
-            <Preview />
+            <AnimatedPreview />
           </div>
         )}
       </div>
@@ -189,6 +300,28 @@ function BuilderContent() {
       <MobileToolbar onDownload={handleDownload} />
 
       <DownloadModal isOpen={showDownloadModal} onClose={handleCloseModal} />
+      <ResumeManagerModal 
+        isOpen={showResumeManager} 
+        onClose={() => setShowResumeManager(false)} 
+      />
+      <ATSAnalysisModal 
+        isOpen={showATSAnalysis} 
+        onClose={() => setShowATSAnalysis(false)} 
+      />
+      <FullscreenPreview 
+        isOpen={showFullscreenPreview} 
+        onClose={() => setShowFullscreenPreview(false)} 
+      />
+      <VersionComparison 
+        isOpen={showVersionComparison} 
+        onClose={() => setShowVersionComparison(false)} 
+        versions={versionHistory}
+      />
+      <GuidedTour 
+        isActive={isTourActive} 
+        onComplete={completeTour}
+        onSkip={skipTour}
+      />
     </div>
   );
 }

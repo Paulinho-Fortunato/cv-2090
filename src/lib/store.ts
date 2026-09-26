@@ -17,6 +17,8 @@ interface ResumeStore {
   theme: 'light' | 'dark';
   language: Language;
   template: TemplateId;
+  history: ResumeData[];
+  historyIndex: number;
   setResumeData: (resumeData: ResumeData) => void;
   updateBasics: (basics: Partial<ResumeData['basics']>) => void;
   setPhoto: (photo: string) => void;
@@ -44,6 +46,10 @@ interface ResumeStore {
   setTemplate: (template: TemplateId) => void;
   resetAll: () => void;
   importData: (resumeData: ResumeData) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
@@ -94,14 +100,26 @@ const migrateResumeData = (data: any): ResumeData => {
 
 export const useResumeStore = create<ResumeStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       resumeData: defaultResumeData,
       activeSection: 'basics',
       theme: 'light',
       language: 'pt',
       template: 'modern',
+      history: [defaultResumeData],
+      historyIndex: 0,
 
-      setResumeData: (resumeData) => set({ resumeData }),
+      setResumeData: (resumeData) => {
+        const { history, historyIndex } = get();
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(resumeData);
+        if (newHistory.length > 50) newHistory.shift(); // Limitar histórico a 50 ações
+        set({ 
+          resumeData, 
+          history: newHistory, 
+          historyIndex: newHistory.length - 1 
+        });
+      },
 
       updateBasics: (basics) =>
         set((state) => ({
@@ -321,6 +339,38 @@ export const useResumeStore = create<ResumeStore>()(
         template: 'modern',
       }),
       importData: (resumeData) => set({ resumeData }),
+      
+      undo: () => {
+        const { history, historyIndex } = get();
+        if (historyIndex > 0) {
+          const newIndex = historyIndex - 1;
+          set({ 
+            resumeData: history[newIndex], 
+            historyIndex: newIndex 
+          });
+        }
+      },
+      
+      redo: () => {
+        const { history, historyIndex } = get();
+        if (historyIndex < history.length - 1) {
+          const newIndex = historyIndex + 1;
+          set({ 
+            resumeData: history[newIndex], 
+            historyIndex: newIndex 
+          });
+        }
+      },
+      
+      canUndo: () => {
+        const { historyIndex } = get();
+        return historyIndex > 0;
+      },
+      
+      canRedo: () => {
+        const { history, historyIndex } = get();
+        return historyIndex < history.length - 1;
+      },
     }),
     {
       name: 'cv-builder-storage',

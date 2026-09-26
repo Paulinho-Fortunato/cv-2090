@@ -30,7 +30,7 @@ export function ProjectsForm() {
   }, [reorderProjects, projects.length]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="projects-form">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <FolderKanban className="w-5 h-5 text-blue-600" />

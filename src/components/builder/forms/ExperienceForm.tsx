@@ -1,168 +1,137 @@
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Briefcase, Plus, Trash2, Building2, Calendar } from 'lucide-react';
+import { Briefcase, Plus, Trash2, Building2, Calendar, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { useResumeStore } from '../../../lib/store';
-import { useEffect } from 'react';
-
-const experienceSchema = z.object({
-  experiences: z.array(
-    z.object({
-      id: z.string(),
-      company: z.string().min(1, 'Empresa é obrigatória'),
-      position: z.string().min(1, 'Cargo é obrigatório'),
-      startDate: z.string().min(1, 'Data de início é obrigatória'),
-      endDate: z.string(),
-      current: z.boolean(),
-      description: z.string(),
-    })
-  ),
-});
-
-type ExperienceFormData = z.infer<typeof experienceSchema>;
+import { translations } from '../../../types/resume';
 
 export function ExperienceForm() {
-  const { experiences, addExperience, updateExperience, removeExperience } =
+  const { experiences, addExperience, updateExperience, removeExperience, reorderExperiences, language, theme } =
     useResumeStore((state) => ({
-      experiences: state.data.experiences,
+      experiences: state.resumeData.experiences,
       addExperience: state.addExperience,
       updateExperience: state.updateExperience,
       removeExperience: state.removeExperience,
+      reorderExperiences: state.reorderExperiences,
+      language: state.language,
+      theme: state.theme,
     }));
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors },
-  } = useForm<ExperienceFormData>({
-    resolver: zodResolver(experienceSchema),
-    defaultValues: { experiences },
-  });
+  const t = translations[language];
+  const isDark = theme === 'dark';
 
-  const { fields } = useFieldArray({
-    control,
-    name: 'experiences',
-  });
-
-  useEffect(() => {
-    reset({ experiences });
-  }, [experiences, reset]);
-
-  const onSubmit = (data: ExperienceFormData) => {
-    data.experiences.forEach((exp) => {
-      updateExperience(exp.id, exp);
-    });
-  };
+  const inputClass = `w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+    isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'
+  }`;
+  const labelClass = `block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Briefcase className="w-5 h-5 text-blue-600" />
-          <h2 className="text-xl font-bold text-gray-900">Experiência Profissional</h2>
+          <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.professionalExperience}</h2>
         </div>
         <button
-          type="button"
           onClick={addExperience}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
         >
           <Plus className="w-4 h-4" />
-          Adicionar
+          {t.add}
         </button>
       </div>
 
-      {fields.length === 0 && (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <Briefcase className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-500">Nenhuma experiência adicionada</p>
-          <p className="text-sm text-gray-400 mt-1">Clique em "Adicionar" para começar</p>
+      {experiences.length === 0 && (
+        <div className={`text-center py-12 rounded-lg border-2 border-dashed ${isDark ? 'border-gray-600 bg-gray-800/50' : 'border-gray-300 bg-gray-50'}`}>
+          <Briefcase className={`w-10 h-10 mx-auto mb-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+          <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>Nenhuma experiência adicionada</p>
+          <p className={`text-sm mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Clique em "Adicionar" para começar</p>
         </div>
       )}
 
-      {fields.map((field, index) => (
+      {experiences.map((exp, index) => (
         <div
-          key={field.id}
-          className="bg-white border border-gray-200 rounded-lg p-4 space-y-4"
+          key={exp.id}
+          className={`border rounded-lg p-4 space-y-4 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500">
-              Experiência #{index + 1}
-            </span>
-            <button
-              type="button"
-              onClick={() => removeExperience(field.id)}
-              className="text-red-500 hover:text-red-700 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <GripVertical className={`w-4 h-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+              <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                #{index + 1}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => index > 0 && reorderExperiences(index, index - 1)}
+                disabled={index === 0}
+                className={`p-1 rounded ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'} disabled:opacity-30`}
+              >
+                <ChevronUp className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => index < experiences.length - 1 && reorderExperiences(index, index + 1)}
+                disabled={index === experiences.length - 1}
+                className={`p-1 rounded ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'} disabled:opacity-30`}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => removeExperience(exp.id)}
+                className="text-red-500 hover:text-red-700 p-1"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Empresa
-              </label>
+              <label className={labelClass}>{t.company}</label>
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  {...register(`experiences.${index}.company` as const)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={exp.company}
+                  onChange={(e) => updateExperience(exp.id, { company: e.target.value })}
+                  className={inputClass}
                   placeholder="Nome da empresa"
                 />
               </div>
-              {errors.experiences?.[index]?.company && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.experiences[index]?.company?.message}
-                </p>
-              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cargo
-              </label>
+              <label className={labelClass}>{t.position}</label>
               <div className="relative">
                 <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  {...register(`experiences.${index}.position` as const)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={exp.position}
+                  onChange={(e) => updateExperience(exp.id, { position: e.target.value })}
+                  className={inputClass}
                   placeholder="Seu cargo"
                 />
               </div>
-              {errors.experiences?.[index]?.position && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.experiences[index]?.position?.message}
-                </p>
-              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data de Início
-              </label>
+              <label className={labelClass}>{t.startDate}</label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  {...register(`experiences.${index}.startDate` as const)}
+                  value={exp.startDate}
+                  onChange={(e) => updateExperience(exp.id, { startDate: e.target.value })}
                   type="month"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputClass}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data de Término
-              </label>
+              <label className={labelClass}>{t.endDate}</label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  {...register(`experiences.${index}.endDate` as const)}
+                  value={exp.endDate}
+                  onChange={(e) => updateExperience(exp.id, { endDate: e.target.value })}
                   type="month"
-                  disabled={field.current}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                  disabled={exp.current}
+                  className={`${inputClass} disabled:opacity-50`}
                 />
               </div>
             </div>
@@ -170,37 +139,30 @@ export function ExperienceForm() {
             <div className="md:col-span-2">
               <label className="flex items-center gap-2">
                 <input
-                  {...register(`experiences.${index}.current` as const)}
                   type="checkbox"
+                  checked={exp.current}
+                  onChange={(e) => updateExperience(exp.id, { current: e.target.checked, endDate: e.target.checked ? '' : exp.endDate })}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Trabalho aqui atualmente</span>
+                <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t.current}</span>
               </label>
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Descrição
-              </label>
+              <label className={labelClass}>{t.description}</label>
               <textarea
-                {...register(`experiences.${index}.description` as const)}
+                value={exp.description}
+                onChange={(e) => updateExperience(exp.id, { description: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
+                  isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'
+                }`}
                 placeholder="Descreva suas responsabilidades e conquistas..."
               />
             </div>
           </div>
         </div>
       ))}
-
-      {fields.length > 0 && (
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        >
-          Salvar Experiências
-        </button>
-      )}
-    </form>
+    </div>
   );
 }

@@ -1,0 +1,41 @@
+# Robots.txt - CV Builder
+# Permite todos os bots de busca
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /.well-known/
+
+# Desabilitar indexação de parâmetros desnecessários
+User-agent: *
+Allow: /?
+Disallow: /?*sort=
+Disallow: /?*filter=
+
+# Sitemaps
+Sitemap: https://cv-2090.vercel.app/sitemap.xml
+Sitemap: https://cv-2090.vercel.app/sitemap-pt-br.xml
+
+# Googlebot (mais permissivo)
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Bingbot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# Bloquear bots ruins
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Velocidade de rastreamento padrão
+Crawl-delay: 1
+Request-rate: 1/1s

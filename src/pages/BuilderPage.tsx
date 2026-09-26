@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Sidebar } from '../components/builder/Sidebar';
 import { Preview } from '../components/builder/Preview';
 import { BasicsForm } from '../components/builder/forms/BasicsForm';
@@ -19,6 +19,7 @@ function BuilderContent() {
   const setActiveSection = useResumeStore((state) => state.setActiveSection);
   const setLanguage = useResumeStore((state) => state.setLanguage);
   const setTemplate = useResumeStore((state) => state.setTemplate);
+  const importData = useResumeStore((state) => state.importData);
   const language = useLanguage();
   const theme = useTheme();
   const template = useTemplate();
@@ -28,6 +29,27 @@ function BuilderContent() {
 
   const t = translations[language];
   const isDark = theme === 'dark';
+
+  // Parser de URL para carregar currículos compartilhados
+  useEffect(() => {
+    const hash = window.location.hash;
+    const queryIndex = hash.indexOf('?');
+    if (queryIndex !== -1) {
+      const queryString = hash.substring(queryIndex + 1);
+      const params = new URLSearchParams(queryString);
+      const data = params.get('data');
+      if (data) {
+        try {
+          const decoded = JSON.parse(decodeURIComponent(atob(data)));
+          importData(decoded);
+          // Remove o parâmetro da URL após carregar
+          window.history.replaceState(null, '', window.location.pathname + '#/builder');
+        } catch (error) {
+          console.error('Erro ao carregar currículo compartilhado:', error);
+        }
+      }
+    }
+  }, [importData]);
 
   const handleDownload = useCallback(() => {
     setShowDownloadModal(true);
@@ -169,6 +191,7 @@ function BuilderContent() {
             { id: 'basics', label: t.basics },
             { id: 'experience', label: t.experience },
             { id: 'education', label: t.education },
+            { id: 'certifications', label: t.certifications },
             { id: 'projects', label: t.projectsSection },
             { id: 'skills', label: t.skillsSection },
           ].map((tab) => (

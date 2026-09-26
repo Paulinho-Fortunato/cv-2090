@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Award, Plus, Trash2, Building2, Calendar, FileText, GripVertical, ChevronUp, ChevronDown, ExternalLink } from 'lucide-react';
+import { BadgeCheck, Plus, Trash2, Building2, Calendar, FileText, GripVertical, ChevronUp, ChevronDown, ExternalLink } from 'lucide-react';
 import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
 import { useLanguage, useTheme } from '../../../hooks/useResume';
@@ -33,7 +33,7 @@ export function CertificationsForm() {
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Award className="w-5 h-5 text-blue-600" />
+          <BadgeCheck className="w-5 h-5 text-blue-600" />
           <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{t.certifications}</h2>
         </div>
         <button
@@ -47,7 +47,7 @@ export function CertificationsForm() {
 
       {certifications.length === 0 && (
         <div className={`text-center py-12 rounded-lg border-2 border-dashed ${isDark ? 'border-gray-600 bg-gray-800/50' : 'border-gray-300 bg-gray-50'}`}>
-          <Award className={`w-10 h-10 mx-auto mb-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+          <BadgeCheck className={`w-10 h-10 mx-auto mb-3 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
           <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>Nenhuma habilitação profissional adicionada</p>
           <p className={`text-sm mt-1 ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
             Adicione cursos, certificações e formações profissionais
@@ -95,7 +95,7 @@ export function CertificationsForm() {
             <div className="md:col-span-2">
               <label className={labelClass}>Nome do Curso/Certificação</label>
               <div className="relative">
-                <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <BadgeCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   value={cert.name}
                   onChange={(e) => updateCertification(cert.id, { name: e.target.value })}

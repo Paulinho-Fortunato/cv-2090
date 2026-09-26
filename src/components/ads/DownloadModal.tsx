@@ -65,12 +65,43 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
     return () => clearInterval(timer);
   }, [isOpen, resetModal]);
 
+  // Função para validar imagem antes de usar no PDF
+  const validatePhoto = async (photoUrl: string): Promise<string | null> => {
+    if (!photoUrl) return null;
+    
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      
+      // Timeout de 3 segundos
+      const timeout = setTimeout(() => {
+        console.warn('Timeout ao validar imagem do perfil');
+        resolve(null);
+      }, 3000);
+      
+      img.onload = () => {
+        clearTimeout(timeout);
+        resolve(photoUrl);
+      };
+      
+      img.onerror = () => {
+        clearTimeout(timeout);
+        console.warn('Foto do perfil inválida, será omitida do PDF');
+        resolve(null);
+      };
+      
+      img.src = photoUrl;
+    });
+  };
+
   const handleDownloadPDF = async () => {
     try {
       // Dynamic import para evitar problemas de inicialização
       const { pdf, Document, Page, Text, View, Image, StyleSheet } = await import('@react-pdf/renderer');
       
       const { basics, experiences, education, certifications, projects, skills, photo } = useResumeStore.getState().resumeData;
+      
+      // Validar foto antes de usar
+      const validPhoto = await validatePhoto(photo);
 
       const styles = StyleSheet.create({
         page: { padding: 30, fontFamily: 'Helvetica' },
@@ -101,8 +132,8 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
           <Page size="A4" style={styles.page}>
             <View style={styles.header}>
               <View style={styles.headerContent}>
-                {photo && (
-                  <Image src={photo} style={styles.photo} />
+                {validPhoto && (
+                  <Image src={validPhoto} style={styles.photo} />
                 )}
                 <View style={styles.headerText}>
                   <Text style={styles.name}>{basics.fullName || 'Seu Nome'}</Text>
@@ -227,16 +258,40 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     try {
       const { resumeData } = useResumeStore.getState();
-      const encoded = btoa(encodeURIComponent(JSON.stringify(resumeData)));
+      const jsonString = JSON.stringify(resumeData);
+      
+      // Verificar se o payload é muito grande (> 1500 caracteres)
+      if (jsonString.length > 1500) {
+        alert(`Currículo muito grande para compartilhar via URL (${jsonString.length} caracteres).\n\nAlternativas:\n• Exportar como JSON (botão no menu lateral)\n• Imprimir como PDF\n• Remover algumas seções para reduzir o tamanho`);
+        return;
+      }
+      
+      const encoded = btoa(encodeURIComponent(jsonString));
       const url = `${window.location.origin}/#/builder?data=${encoded}`;
-      navigator.clipboard.writeText(url);
+      
+      // Tenta Clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        // Fallback: copia manualmente
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      
       setShowShareLink(true);
       setTimeout(() => setShowShareLink(false), 3000);
     } catch (error) {
       console.error('Error sharing:', error);
+      alert('Não foi possível copiar o link. Tente novamente.');
     }
   };
 

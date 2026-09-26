@@ -14,6 +14,7 @@ import { FullscreenPreview } from '../components/ads/FullscreenPreview';
 import { VersionComparison } from '../components/ads/VersionComparison';
 import { CoverLetterGenerator } from '../components/ads/CoverLetterGenerator';
 import { IndustryTemplates } from '../components/ads/IndustryTemplates';
+import { CustomTemplateEditor } from '../components/builder/CustomTemplateEditor';
 import { MobileToolbar } from '../components/builder/MobileToolbar';
 import { GuidedTour, useGuidedTour } from '../components/ui/GuidedTour';
 import { useResumeStore } from '../lib/store';
@@ -105,6 +106,18 @@ function BuilderContent() {
   }, []);
 
   const renderForm = () => {
+    // Se o template for custom, mostrar editor de personalização
+    if (template === 'custom') {
+      return (
+        <div className="space-y-6">
+          <CustomTemplateEditor />
+          <div className="border-t pt-6">
+            <BasicsForm />
+          </div>
+        </div>
+      );
+    }
+
     switch (activeSection) {
       case 'basics': return <BasicsForm />;
       case 'experience': return <ExperienceForm />;
@@ -122,6 +135,7 @@ function BuilderContent() {
     { id: 'tech', label: 'Tech/Dev' },
     { id: 'compact', label: 'Compacto' },
     { id: 'creative', label: 'Criativo' },
+    { id: 'custom', label: '✨ Personalizado' },
   ];
 
   const languages: { id: Language; label: string; flag: string }[] = [

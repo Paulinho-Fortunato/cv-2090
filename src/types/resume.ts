@@ -6,6 +6,7 @@ export interface ResumeData {
   projects: Project[];
   skills: string[];
   photo: string;
+  sectionsConfig: SectionConfig[];
 }
 
 export interface Basics {
@@ -80,6 +81,15 @@ export interface Certification {
   certificateUrl: string;
 }
 
+export const defaultSectionsConfig: SectionConfig[] = [
+  { id: 'summary', type: 'summary', title: 'Resumo Profissional', enabled: true, order: 0 },
+  { id: 'experience', type: 'experience', title: 'Experiência Profissional', enabled: true, order: 1 },
+  { id: 'education', type: 'education', title: 'Formação Acadêmica', enabled: true, order: 2 },
+  { id: 'certifications', type: 'certifications', title: 'Habilitações Profissionais', enabled: true, order: 3 },
+  { id: 'projects', type: 'projects', title: 'Projetos', enabled: true, order: 4 },
+  { id: 'skills', type: 'skills', title: 'Habilidades', enabled: true, order: 5 },
+];
+
 export const defaultResumeData: ResumeData = {
   basics: {
     fullName: '',
@@ -118,9 +128,18 @@ export const defaultResumeData: ResumeData = {
   projects: [],
   skills: [],
   photo: '',
+  sectionsConfig: defaultSectionsConfig,
 };
 
-export type TemplateId = 'modern' | 'executive' | 'tech' | 'compact' | 'creative';
+export type TemplateId = 'modern' | 'executive' | 'tech' | 'compact' | 'creative' | 'custom';
+
+export interface SectionConfig {
+  id: string;
+  type: 'basics' | 'summary' | 'experience' | 'education' | 'certifications' | 'projects' | 'skills' | 'custom';
+  title: string;
+  enabled: boolean;
+  order: number;
+}
 
 export type Language = 'pt' | 'en' | 'es';
 

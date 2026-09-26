@@ -1,29 +1,30 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useResumeStore } from '../../lib/store';
 import { Mail, Phone, MapPin, Briefcase, GraduationCap, Award, Globe, Link2, FolderKanban } from 'lucide-react';
 import { translations } from '../../types/resume';
+import { useResumeBasics, useResumeExperiences, useResumeEducation, useResumeProjects, useResumeSkills, useResumePhoto, useLanguage, useTemplate, useTheme } from '../../hooks/useResume';
 
 function PreviewComponent() {
-  const basics = useResumeStore((state) => state.resumeData.basics);
-  const experiences = useResumeStore((state) => state.resumeData.experiences);
-  const education = useResumeStore((state) => state.resumeData.education);
-  const projects = useResumeStore((state) => state.resumeData.projects);
-  const skills = useResumeStore((state) => state.resumeData.skills);
-  const photo = useResumeStore((state) => state.resumeData.photo);
-  const language = useResumeStore((state) => state.language);
-  const template = useResumeStore((state) => state.template);
-  const theme = useResumeStore((state) => state.theme);
+  const basics = useResumeBasics();
+  const experiences = useResumeExperiences();
+  const education = useResumeEducation();
+  const projects = useResumeProjects();
+  const skills = useResumeSkills();
+  const photo = useResumePhoto();
+  const language = useLanguage();
+  const template = useTemplate();
+  const theme = useTheme();
 
   const t = translations[language];
 
-  const formatDate = (date: string) => {
+  const formatDate = useMemo(() => (date: string) => {
     if (!date) return '';
     const [year, month] = date.split('-');
     const months = language === 'en'
       ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
       : ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     return `${months[parseInt(month) - 1]} ${year}`;
-  };
+  }, [language]);
 
   const isDark = theme === 'dark';
   const bgClass = isDark ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900';

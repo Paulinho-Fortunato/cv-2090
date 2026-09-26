@@ -1,15 +1,17 @@
+import { useCallback } from 'react';
 import { Briefcase, Plus, Trash2, Building2, Calendar, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
+import { useResumeExperiences, useLanguage, useTheme } from '../../../hooks/useResume';
 
 export function ExperienceForm() {
-  const experiences = useResumeStore((state) => state.resumeData.experiences);
+  const experiences = useResumeExperiences();
   const addExperience = useResumeStore((state) => state.addExperience);
   const updateExperience = useResumeStore((state) => state.updateExperience);
   const removeExperience = useResumeStore((state) => state.removeExperience);
   const reorderExperiences = useResumeStore((state) => state.reorderExperiences);
-  const language = useResumeStore((state) => state.language);
-  const theme = useResumeStore((state) => state.theme);
+  const language = useLanguage();
+  const theme = useTheme();
 
   const t = translations[language];
   const isDark = theme === 'dark';
@@ -18,6 +20,14 @@ export function ExperienceForm() {
     isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'
   }`;
   const labelClass = `block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`;
+
+  const handleMoveUp = useCallback((index: number) => {
+    if (index > 0) reorderExperiences(index, index - 1);
+  }, [reorderExperiences]);
+
+  const handleMoveDown = useCallback((index: number) => {
+    if (index < experiences.length - 1) reorderExperiences(index, index + 1);
+  }, [reorderExperiences, experiences.length]);
 
   return (
     <div className="space-y-6">
@@ -57,14 +67,14 @@ export function ExperienceForm() {
             </div>
             <div className="flex items-center gap-1">
               <button
-                onClick={() => index > 0 && reorderExperiences(index, index - 1)}
+                onClick={() => handleMoveUp(index)}
                 disabled={index === 0}
                 className={`p-1 rounded ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'} disabled:opacity-30`}
               >
                 <ChevronUp className="w-4 h-4" />
               </button>
               <button
-                onClick={() => index < experiences.length - 1 && reorderExperiences(index, index + 1)}
+                onClick={() => handleMoveDown(index)}
                 disabled={index === experiences.length - 1}
                 className={`p-1 rounded ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'} disabled:opacity-30`}
               >

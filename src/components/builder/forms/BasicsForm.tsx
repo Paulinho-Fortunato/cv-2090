@@ -1,15 +1,21 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { User, Mail, Phone, MapPin, FileText, Briefcase, Globe, Link2, Camera, X, Info } from 'lucide-react';
 import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
+import { useShallow } from 'zustand/react/shallow';
 
 export function BasicsForm() {
-  const basics = useResumeStore((state) => state.resumeData.basics);
-  const photo = useResumeStore((state) => state.resumeData.photo);
+  const { basics, photo, language, theme } = useResumeStore(
+    useShallow((state) => ({
+      basics: state.resumeData.basics,
+      photo: state.resumeData.photo,
+      language: state.language,
+      theme: state.theme,
+    }))
+  );
+  
   const updateBasics = useResumeStore((state) => state.updateBasics);
   const setPhoto = useResumeStore((state) => state.setPhoto);
-  const language = useResumeStore((state) => state.language);
-  const theme = useResumeStore((state) => state.theme);
 
   const t = translations[language];
   const isDark = theme === 'dark';
@@ -18,7 +24,7 @@ export function BasicsForm() {
     updateBasics({ [field]: value });
   }, [updateBasics]);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -27,18 +33,19 @@ export function BasicsForm() {
       };
       reader.readAsDataURL(file);
     }
-  };
+  }, [setPhoto]);
 
-  const inputClass = `w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+  const inputClass = useMemo(() => `w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
     isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'border-gray-300'
-  }`;
-  const labelClass = `block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`;
+  }`, [isDark]);
+  
+  const labelClass = useMemo(() => `block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`, [isDark]);
 
-  const tips: Record<string, string> = {
+  const tips = useMemo(() => ({
     fullName: language === 'pt' ? 'Use seu nome completo como aparece em documentos oficiais' : 'Use your full name as it appears on official documents',
     headline: language === 'pt' ? 'Ex: Desenvolvedor Full Stack, Designer UX, Gerente de Projetos' : 'Ex: Full Stack Developer, UX Designer, Project Manager',
     summary: language === 'pt' ? 'Máximo 3-4 linhas destacando suas principais conquistas e habilidades' : 'Max 3-4 lines highlighting your main achievements and skills',
-  };
+  }), [language]);
 
   return (
     <div className="space-y-6">

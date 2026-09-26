@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Sidebar } from '../components/builder/Sidebar';
 import { Preview } from '../components/builder/Preview';
 import { BasicsForm } from '../components/builder/forms/BasicsForm';
@@ -11,21 +11,34 @@ import { useResumeStore } from '../lib/store';
 import { Eye, EyeOff, FileText, Globe, Layout } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { translations, TemplateId, Language } from '../types/resume';
+import { useActiveSection, useLanguage, useTheme, useTemplate } from '../hooks/useResume';
 
 function BuilderContent() {
-  const activeSection = useResumeStore((state) => state.activeSection);
+  const activeSection = useActiveSection();
   const setActiveSection = useResumeStore((state) => state.setActiveSection);
-  const theme = useResumeStore((state) => state.theme);
-  const language = useResumeStore((state) => state.language);
   const setLanguage = useResumeStore((state) => state.setLanguage);
-  const template = useResumeStore((state) => state.template);
   const setTemplate = useResumeStore((state) => state.setTemplate);
+  const language = useLanguage();
+  const theme = useTheme();
+  const template = useTemplate();
   
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
 
   const t = translations[language];
   const isDark = theme === 'dark';
+
+  const handleDownload = useCallback(() => {
+    setShowDownloadModal(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setShowDownloadModal(false);
+  }, []);
+
+  const handleTogglePreview = useCallback(() => {
+    setShowPreview((prev) => !prev);
+  }, []);
 
   const renderForm = () => {
     switch (activeSection) {
@@ -61,7 +74,7 @@ function BuilderContent() {
         </Link>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowPreview(!showPreview)}
+            onClick={handleTogglePreview}
             className={`flex items-center gap-1.5 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}
           >
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -72,7 +85,7 @@ function BuilderContent() {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <div className="hidden lg:block">
-          <Sidebar onDownload={() => setShowDownloadModal(true)} />
+          <Sidebar onDownload={handleDownload} />
         </div>
 
         {/* Form Area */}
@@ -135,7 +148,7 @@ function BuilderContent() {
             <div className="flex items-center justify-between mb-4">
               <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Preview</h3>
               <button
-                onClick={() => setShowPreview(false)}
+                onClick={handleTogglePreview}
                 className="text-sm text-blue-600 font-medium"
               >
                 Voltar ao Editor
@@ -169,7 +182,7 @@ function BuilderContent() {
             </button>
           ))}
           <button
-            onClick={() => setShowDownloadModal(true)}
+            onClick={handleDownload}
             className="flex-1 px-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-medium"
           >
             PDF
@@ -177,7 +190,7 @@ function BuilderContent() {
         </div>
       </div>
 
-      <DownloadModal isOpen={showDownloadModal} onClose={() => setShowDownloadModal(false)} />
+      <DownloadModal isOpen={showDownloadModal} onClose={handleCloseModal} />
     </div>
   );
 }

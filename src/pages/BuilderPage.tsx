@@ -11,10 +11,16 @@ import { useResumeStore } from '../lib/store';
 import { Eye, EyeOff, FileText, Globe, Layout } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { translations, TemplateId, Language } from '../types/resume';
-import { ToastProvider } from '../components/ui/Toast';
 
 function BuilderContent() {
-  const { activeSection, theme, language, template, setLanguage, setTemplate } = useResumeStore();
+  const activeSection = useResumeStore((state) => state.activeSection);
+  const setActiveSection = useResumeStore((state) => state.setActiveSection);
+  const theme = useResumeStore((state) => state.theme);
+  const language = useResumeStore((state) => state.language);
+  const setLanguage = useResumeStore((state) => state.setLanguage);
+  const template = useResumeStore((state) => state.template);
+  const setTemplate = useResumeStore((state) => state.setTemplate);
+  
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
 
@@ -152,7 +158,7 @@ function BuilderContent() {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => useResumeStore.getState().setActiveSection(tab.id)}
+              onClick={() => setActiveSection(tab.id)}
               className={`flex-1 px-1 py-2 rounded-lg text-xs font-medium transition-colors ${
                 activeSection === tab.id
                   ? isDark ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-50 text-blue-700'
@@ -177,9 +183,5 @@ function BuilderContent() {
 }
 
 export function BuilderPage() {
-  return (
-    <ToastProvider>
-      <BuilderContent />
-    </ToastProvider>
-  );
+  return <BuilderContent />;
 }

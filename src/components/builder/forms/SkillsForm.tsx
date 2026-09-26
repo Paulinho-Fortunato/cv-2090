@@ -4,13 +4,11 @@ import { useResumeStore } from '../../../lib/store';
 import { translations } from '../../../types/resume';
 
 export function SkillsForm() {
-  const { skills, addSkill, removeSkill, language, theme } = useResumeStore((state) => ({
-    skills: state.resumeData.skills,
-    addSkill: state.addSkill,
-    removeSkill: state.removeSkill,
-    language: state.language,
-    theme: state.theme,
-  }));
+  const skills = useResumeStore((state) => state.resumeData.skills);
+  const addSkill = useResumeStore((state) => state.addSkill);
+  const removeSkill = useResumeStore((state) => state.removeSkill);
+  const language = useResumeStore((state) => state.language);
+  const theme = useResumeStore((state) => state.theme);
 
   const [newSkill, setNewSkill] = useState('');
   const t = translations[language];
@@ -31,7 +29,6 @@ export function SkillsForm() {
     }
   };
 
-  // Suggested skills based on common tech
   const suggestions = ['JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'SQL', 'Git', 'Docker', 'AWS', 'Figma', 'Photoshop', 'Excel'];
   const availableSuggestions = suggestions.filter((s) => !skills.includes(s));
 
@@ -70,7 +67,6 @@ export function SkillsForm() {
         </div>
       </div>
 
-      {/* Suggestions */}
       {availableSuggestions.length > 0 && skills.length < 5 && (
         <div>
           <p className={`text-xs mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Sugestões populares:</p>
@@ -102,7 +98,7 @@ export function SkillsForm() {
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {skills.map((skill: string, index: number) => (
+          {skills.map((skill, index) => (
             <div
               key={index}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border group transition-colors ${

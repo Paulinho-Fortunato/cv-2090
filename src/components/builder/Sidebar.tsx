@@ -8,7 +8,14 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onDownload }: SidebarProps) {
-  const { activeSection, setActiveSection, resetAll, resumeData, importData, theme, setTheme, language } = useResumeStore();
+  const activeSection = useResumeStore((state) => state.activeSection);
+  const setActiveSection = useResumeStore((state) => state.setActiveSection);
+  const resetAll = useResumeStore((state) => state.resetAll);
+  const resumeData = useResumeStore((state) => state.resumeData);
+  const importData = useResumeStore((state) => state.importData);
+  const theme = useResumeStore((state) => state.theme);
+  const setTheme = useResumeStore((state) => state.setTheme);
+  const language = useResumeStore((state) => state.language);
 
   const t = translations[language];
   const [showConfirm, setShowConfirm] = useState(false);
@@ -27,24 +34,19 @@ export function Sidebar({ onDownload }: SidebarProps) {
     let filled = 0;
     const { basics, experiences, education, projects, skills } = resumeData;
 
-    // Basics (6 fields)
     const basicsFields = [basics.fullName, basics.headline, basics.email, basics.phone, basics.location, basics.summary];
     total += basicsFields.length;
     filled += basicsFields.filter((f) => f.trim() !== '').length;
 
-    // At least 1 experience
     total += 1;
     if (experiences.length > 0 && experiences.some((e) => e.company && e.position)) filled += 1;
 
-    // At least 1 education
     total += 1;
     if (education.length > 0 && education.some((e) => e.institution && e.degree)) filled += 1;
 
-    // At least 1 project
     total += 1;
     if (projects.length > 0 && projects.some((p) => p.name)) filled += 1;
 
-    // At least 3 skills
     total += 1;
     if (skills.length >= 3) filled += 1;
 
@@ -80,14 +82,16 @@ export function Sidebar({ onDownload }: SidebarProps) {
     }
   };
 
+  const isDark = theme === 'dark';
+
   return (
-    <div className={`w-64 border-r flex flex-col h-full ${theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
-      <div className={`p-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-        <h1 className={`text-lg font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+    <div className={`w-64 border-r flex flex-col h-full ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
+      <div className={`p-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+        <h1 className={`text-lg font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
           <FileJson className="w-5 h-5 text-blue-600" />
           CV Builder
         </h1>
-        <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+        <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
           {t.progress}: {progress}%
         </p>
         <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
@@ -107,10 +111,10 @@ export function Sidebar({ onDownload }: SidebarProps) {
               onClick={() => setActiveSection(section.id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 activeSection === section.id
-                  ? theme === 'dark'
+                  ? isDark
                     ? 'bg-blue-900/30 text-blue-400 border border-blue-800'
                     : 'bg-blue-50 text-blue-700 border border-blue-200'
-                  : theme === 'dark'
+                  : isDark
                   ? 'text-gray-300 hover:bg-gray-800'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
@@ -122,7 +126,7 @@ export function Sidebar({ onDownload }: SidebarProps) {
         })}
       </nav>
 
-      <div className={`p-3 border-t space-y-2 ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+      <div className={`p-3 border-t space-y-2 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
         <button
           onClick={onDownload}
           className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
@@ -135,7 +139,7 @@ export function Sidebar({ onDownload }: SidebarProps) {
           <button
             onClick={handleExport}
             className={`flex-1 flex items-center justify-center gap-1.5 border py-2 px-3 rounded-lg text-xs font-medium ${
-              theme === 'dark'
+              isDark
                 ? 'border-gray-600 text-gray-300 hover:bg-gray-800'
                 : 'border-gray-300 text-gray-700 hover:bg-gray-50'
             }`}
@@ -144,7 +148,7 @@ export function Sidebar({ onDownload }: SidebarProps) {
             {t.export}
           </button>
           <label className={`flex-1 flex items-center justify-center gap-1.5 border py-2 px-3 rounded-lg text-xs font-medium cursor-pointer ${
-            theme === 'dark'
+            isDark
               ? 'border-gray-600 text-gray-300 hover:bg-gray-800'
               : 'border-gray-300 text-gray-700 hover:bg-gray-50'
           }`}>
@@ -155,14 +159,14 @@ export function Sidebar({ onDownload }: SidebarProps) {
         </div>
 
         <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={() => setTheme(isDark ? 'light' : 'dark')}
           className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm ${
-            theme === 'dark'
+            isDark
               ? 'text-gray-300 hover:bg-gray-800'
               : 'text-gray-600 hover:bg-gray-50'
           }`}
         >
-          {theme === 'dark' ? t.lightMode : t.darkMode}
+          {isDark ? t.lightMode : t.darkMode}
         </button>
 
         {!showConfirm ? (
@@ -174,8 +178,8 @@ export function Sidebar({ onDownload }: SidebarProps) {
             {t.clearAll}
           </button>
         ) : (
-          <div className={`border rounded-lg p-3 ${theme === 'dark' ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200'}`}>
-            <p className={`text-xs mb-2 text-center ${theme === 'dark' ? 'text-red-300' : 'text-red-700'}`}>
+          <div className={`border rounded-lg p-3 ${isDark ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200'}`}>
+            <p className={`text-xs mb-2 text-center ${isDark ? 'text-red-300' : 'text-red-700'}`}>
               Tem certeza?
             </p>
             <div className="flex gap-2">
@@ -188,7 +192,7 @@ export function Sidebar({ onDownload }: SidebarProps) {
               <button
                 onClick={() => setShowConfirm(false)}
                 className={`flex-1 border py-1.5 px-3 rounded text-xs font-medium ${
-                  theme === 'dark' ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'
+                  isDark ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'
                 }`}
               >
                 {t.cancel}

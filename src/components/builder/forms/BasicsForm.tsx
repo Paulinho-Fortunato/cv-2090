@@ -498,7 +498,7 @@ export function BasicsForm() {
               <div className="relative">
                 <Languages className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  value={basics.languages.join(', ')}
+                  value={(basics.languages || []).join(', ')}
                   onChange={(e) => handleArrayChange('languages', e.target.value)}
                   className={inputClass}
                   placeholder="Português, Inglês, Francês"
@@ -519,7 +519,7 @@ export function BasicsForm() {
               <div className="relative">
                 <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  value={basics.interests.join(', ')}
+                  value={(basics.interests || []).join(', ')}
                   onChange={(e) => handleArrayChange('interests', e.target.value)}
                   className={inputClass}
                   placeholder="Tecnologia, Design, Música"

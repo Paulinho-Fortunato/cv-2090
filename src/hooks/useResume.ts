@@ -70,7 +70,7 @@ export function useProgress() {
     if (projects.length > 0 && projects.some((p) => p.name)) filled += 1;
 
     total += 1;
-    if (skills.length >= 3) filled += 1;
+    if (skills && skills.length >= 3) filled += 1;
 
     return Math.round((filled / total) * 100);
   }, [resumeData]);

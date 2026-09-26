@@ -92,7 +92,7 @@ function PreviewComponent() {
         )}
 
         {/* Informações Pessoais */}
-        {(basics.birthDate || basics.nationality || basics.maritalStatus || basics.languages.length > 0 || basics.objectives) && (
+        {(basics.birthDate || basics.nationality || basics.maritalStatus || (basics.languages && basics.languages.length > 0) || basics.objectives) && (
           <div>
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
               <Heart className="w-4 h-4 text-blue-600 flex-shrink-0" />
@@ -119,7 +119,7 @@ function PreviewComponent() {
                   <span>{basics.maritalStatus}</span>
                 </p>
               )}
-              {basics.languages.length > 0 && (
+              {basics.languages && basics.languages.length > 0 && (
                 <p className="flex items-center gap-2">
                   <Languages className="w-3 h-3 flex-shrink-0" />
                   <span>{basics.languages.join(', ')}</span>
@@ -201,7 +201,7 @@ function PreviewComponent() {
         )}
 
         {/* Informações Adicionais */}
-        {(basics.interests.length > 0 || basics.availability || basics.salaryExpectation) && (
+        {(basics.interests && basics.interests.length > 0 || basics.availability || basics.salaryExpectation) && (
           <div>
             <div className="flex items-center gap-2 mb-2 sm:mb-3">
               <Sparkles className="w-4 h-4 text-blue-600 flex-shrink-0" />
@@ -210,7 +210,7 @@ function PreviewComponent() {
               </h3>
             </div>
             <div className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} space-y-1`}>
-              {basics.interests.length > 0 && (
+              {basics.interests && basics.interests.length > 0 && (
                 <p className="flex items-center gap-2">
                   <Sparkles className="w-3 h-3 flex-shrink-0" />
                   <span>{basics.interests.join(', ')}</span>
@@ -467,7 +467,7 @@ function PreviewComponent() {
               {t.skillsLabel}
             </h3>
             <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
-              {skills.join(' • ')}
+              {(skills || []).join(' • ')}
             </p>
           </div>
         )}
@@ -713,7 +713,7 @@ function PreviewComponent() {
                   {t.skillsLabel}
                 </h3>
                 <div className="flex flex-wrap gap-1">
-                  {skills.slice(0, 12).map((skill, index) => (
+                  {(skills || []).slice(0, 12).map((skill, index) => (
                     <span
                       key={index}
                       className={`text-[10px] px-1.5 py-0.5 rounded ${

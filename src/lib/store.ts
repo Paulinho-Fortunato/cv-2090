@@ -43,6 +43,49 @@ interface ResumeStore {
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
 
+// Função para migrar dados antigos e garantir que todos os campos existam
+const migrateResumeData = (data: any): ResumeData => {
+  if (!data || !data.basics) return defaultResumeData;
+  
+  return {
+    basics: {
+      fullName: data.basics.fullName || '',
+      headline: data.basics.headline || '',
+      email: data.basics.email || '',
+      phone: data.basics.phone || '',
+      location: data.basics.location || '',
+      summary: data.basics.summary || '',
+      website: data.basics.website || '',
+      linkedin: data.basics.linkedin || '',
+      github: data.basics.github || '',
+      birthDate: data.basics.birthDate || '',
+      nationality: data.basics.nationality || '',
+      maritalStatus: data.basics.maritalStatus || '',
+      street: data.basics.street || '',
+      city: data.basics.city || '',
+      state: data.basics.state || '',
+      zipCode: data.basics.zipCode || '',
+      country: data.basics.country || '',
+      twitter: data.basics.twitter || '',
+      instagram: data.basics.instagram || '',
+      behance: data.basics.behance || '',
+      dribbble: data.basics.dribbble || '',
+      medium: data.basics.medium || '',
+      youtube: data.basics.youtube || '',
+      languages: Array.isArray(data.basics.languages) ? data.basics.languages : [],
+      interests: Array.isArray(data.basics.interests) ? data.basics.interests : [],
+      objectives: data.basics.objectives || '',
+      availability: data.basics.availability || '',
+      salaryExpectation: data.basics.salaryExpectation || '',
+    },
+    experiences: Array.isArray(data.experiences) ? data.experiences : [],
+    education: Array.isArray(data.education) ? data.education : [],
+    projects: Array.isArray(data.projects) ? data.projects : [],
+    skills: Array.isArray(data.skills) ? data.skills : [],
+    photo: data.photo || '',
+  };
+};
+
 export const useResumeStore = create<ResumeStore>()(
   persist(
     (set) => ({
@@ -224,6 +267,16 @@ export const useResumeStore = create<ResumeStore>()(
     }),
     {
       name: 'cv-builder-storage',
+      migrate: (persistedState: any) => {
+        // Migra dados antigos para a nova estrutura
+        if (persistedState && persistedState.resumeData) {
+          return {
+            ...persistedState,
+            resumeData: migrateResumeData(persistedState.resumeData),
+          };
+        }
+        return persistedState;
+      },
     }
   )
 );

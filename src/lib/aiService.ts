@@ -100,14 +100,23 @@ class AIService {
     }
 
     try {
+      // Garantir que resumeData tem a estrutura correta
+      const safeData = {
+        basics: resumeData.basics || ({} as any),
+        experiences: resumeData.experiences || [],
+        education: resumeData.education || [],
+        projects: resumeData.projects || [],
+        skills: resumeData.skills || [],
+      };
+
       const prompt = `Analise este currículo e forneça sugestões de melhoria em formato JSON:
 
-Nome: ${resumeData.basics.fullName}
-Cargo: ${resumeData.basics.headline}
-Resumo: ${resumeData.basics.summary}
-Experiências: ${resumeData.experiences.length}
-Educação: ${resumeData.education.length}
-Skills: ${resumeData.skills.join(', ')}
+Nome: ${safeData.basics.fullName || ''}
+Cargo: ${safeData.basics.headline || ''}
+Resumo: ${safeData.basics.summary || ''}
+Experiências: ${safeData.experiences.length}
+Educação: ${safeData.education.length}
+Skills: ${safeData.skills.join(', ')}
 
 Forneça 3-5 sugestões específicas e acionáveis em JSON:
 [
@@ -146,10 +155,16 @@ Responda APENAS com o JSON, sem texto adicional.`;
     }
 
     try {
+      const safeData = {
+        basics: resumeData.basics || ({} as any),
+        experiences: resumeData.experiences || [],
+        skills: resumeData.skills || [],
+      };
+
       const prompt = `Crie um resumo profissional conciso (3-4 linhas) para:
-Cargo: ${resumeData.basics.headline}
-Experiências: ${resumeData.experiences.map(e => `${e.position} na ${e.company}`).join(', ')}
-Skills: ${resumeData.skills.slice(0, 10).join(', ')}
+Cargo: ${safeData.basics.headline || ''}
+Experiências: ${safeData.experiences.map(e => `${e.position} na ${e.company}`).join(', ')}
+Skills: ${safeData.skills.slice(0, 10).join(', ')}
 
 O resumo deve ser profissional, direto e destacar os pontos fortes. Responda apenas com o resumo.`;
 
@@ -185,7 +200,7 @@ O resumo deve ser profissional, direto e destacar os pontos fortes. Responda ape
 Candidato: ${resumeData.basics.fullName}
 Cargo Desejado: ${resumeData.basics.headline}
 Experiências Principais: ${resumeData.experiences.slice(0, 3).map(e => `${e.position} na ${e.company}`).join(', ')}
-Skills: ${resumeData.skills.slice(0, 8).join(', ')}
+Skills: ${(resumeData.skills || []).slice(0, 8).join(', ')}
 
 Descrição da Vaga:
 ${jobDescription}
@@ -255,7 +270,7 @@ Forneça apenas a descrição melhorada, sem explicações adicionais.`;
       });
     }
 
-    if (resumeData.experiences.length === 0) {
+    if (!resumeData.experiences || resumeData.experiences.length === 0) {
       suggestions.push({
         type: 'experience',
         title: 'Experiência Profissional',
@@ -274,7 +289,7 @@ Forneça apenas a descrição melhorada, sem explicações adicionais.`;
       }
     }
 
-    if (resumeData.skills.length < 5) {
+    if (!resumeData.skills || resumeData.skills.length < 5) {
       suggestions.push({
         type: 'skills',
         title: 'Habilidades',
@@ -296,8 +311,8 @@ Forneça apenas a descrição melhorada, sem explicações adicionais.`;
   }
 
   private getFallbackSummary(resumeData: ResumeData): string {
-    const skills = resumeData.skills.slice(0, 5).join(', ');
-    const experience = resumeData.experiences.length > 0 
+    const skills = (resumeData.skills || []).slice(0, 5).join(', ');
+    const experience = (resumeData.experiences || []).length > 0 
       ? `com experiência em ${resumeData.experiences[0].position}` 
       : '';
 
@@ -313,7 +328,7 @@ Forneça apenas a descrição melhorada, sem explicações adicionais.`;
 
 Com grande entusiasmo, submeto minha candidatura à vaga apresentada. Como profissional com experiência em ${resumeData.basics.headline || 'minha área de atuação'}, acredito que minhas competências estão alinhadas com os requisitos da posição.
 
-Ao longo da minha trajetória, desenvolvi habilidades em ${resumeData.skills.slice(0, 5).join(', ')}, que me permitem contribuir efetivamente para os objetivos da empresa. ${resumeData.experiences.length > 0 ? `Minha experiência mais recente como ${resumeData.experiences[0].position} na ${resumeData.experiences[0].company} me proporcionou insights valiosos sobre ${resumeData.experiences[0].description?.substring(0, 100) || 'a área'}.` : ''}
+Ao longo da minha trajetória, desenvolvi habilidades em ${(resumeData.skills || []).slice(0, 5).join(', ')}, que me permitem contribuir efetivamente para os objetivos da empresa. ${(resumeData.experiences || []).length > 0 ? `Minha experiência mais recente como ${resumeData.experiences[0].position} na ${resumeData.experiences[0].company} me proporcionou insights valiosos sobre ${resumeData.experiences[0].description?.substring(0, 100) || 'a área'}.` : ''}
 
 Estou motivado(a) pela oportunidade de aplicar meu conhecimento e crescer profissionalmente em sua organização. Acredito que minha combinação de habilidades técnicas e compromisso com resultados pode agregar valor significativo à equipe.
 

@@ -99,7 +99,7 @@ Se quiser usar a IA:
 2. Selecione seu projeto
 3. Vá em **Settings** → **Environment Variables**
 4. Adicione nova variável:
-   - **Name**: `VITE_OPENROUTER_API_KEY`
+   - **Name**: `OPENROUTER_API_KEY`
    - **Value**: `sk-or-v1-sua-chave-aqui`
    - **Environment**: ✅ Production ✅ Preview ✅ Development
 5. Clique em **Save**

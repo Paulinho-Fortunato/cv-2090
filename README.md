@@ -24,7 +24,7 @@ Construtor de currículo profissional online com múltiplos templates, preview a
 
 3. **Configure a API Key (Opcional)**
    - Vá em Settings → Environment Variables
-   - Adicione: `VITE_OPENROUTER_API_KEY`
+   - Adicione: `OPENROUTER_API_KEY`
    - Cole sua chave da OpenRouter
    - Clique em "Save"
    - Faça redeploy
@@ -123,12 +123,12 @@ Crie um arquivo `.env` na raiz do projeto:
 
 ```bash
 # OpenRouter API Key (opcional)
-VITE_OPENROUTER_API_KEY=sk-or-v1-sua-chave-aqui
+OPENROUTER_API_KEY=sk-or-v1-sua-chave-aqui
 ```
 
 **Para Vercel:**
 1. Vá em Settings → Environment Variables
-2. Adicione `VITE_OPENROUTER_API_KEY`
+2. Adicione `OPENROUTER_API_KEY`
 3. Cole sua chave
 4. Clique em "Save"
 5. Faça redeploy

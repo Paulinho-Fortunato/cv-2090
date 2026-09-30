@@ -18,10 +18,10 @@ import { CustomTemplateEditor } from '../components/builder/CustomTemplateEditor
 import { MobileToolbar } from '../components/builder/MobileToolbar';
 import { GuidedTour, useGuidedTour } from '../components/ui/GuidedTour';
 import { useResumeStore } from '../lib/store';
-import { Eye, EyeOff, FileText, Globe, Layout, FolderOpen, Target, Undo2, Redo2, Maximize2, GitCompare, Briefcase } from 'lucide-react';
+import { Eye, EyeOff, FileText, Globe, Layout, FolderOpen, Target, Undo2, Redo2, Maximize2, GitCompare, Briefcase, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { translations, TemplateId, Language } from '../types/resume';
-import { useActiveSection, useLanguage, useTheme, useTemplate } from '../hooks/useResume';
+import { useActiveSection, useLanguage, useTheme, useTemplate, useProgress } from '../hooks/useResume';
 import { useUndoRedo } from '../hooks/useUndoRedo';
 import { useSectionNavigation } from '../hooks/useTouchGestures';
 
@@ -42,7 +42,8 @@ function BuilderContent() {
   const [showVersionComparison, setShowVersionComparison] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
   const [showIndustryTemplates, setShowIndustryTemplates] = useState(false);
-  const [showPreview, setShowPreview] = useState(true);
+  // O primeiro passo deve ser preencher os dados; o preview fica disponível por ação explícita.
+  const [showPreview, setShowPreview] = useState(false);
 
   const { canUndo, canRedo, undo, redo } = useUndoRedo();
   const { isActive: isTourActive, completeTour, skipTour, restartTour } = useGuidedTour();
@@ -71,6 +72,17 @@ function BuilderContent() {
 
   const t = translations[language];
   const isDark = theme === 'dark';
+  const progress = useProgress();
+  const sectionOrder = ['basics', 'experience', 'education', 'certifications', 'projects', 'skills'];
+  const sectionLabels: Record<string, string> = {
+    basics: t.basics,
+    experience: t.experience,
+    education: t.education,
+    certifications: t.certifications,
+    projects: t.projectsSection,
+    skills: t.skillsSection,
+  };
+  const currentSectionIndex = sectionOrder.indexOf(activeSection);
 
   // Parser de URL para carregar currículos compartilhados
   useEffect(() => {
@@ -207,6 +219,27 @@ function BuilderContent() {
         {/* Form Area */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6">
           <div className="max-w-2xl mx-auto">
+            <section className={`mb-5 rounded-2xl border p-5 shadow-sm ${isDark ? 'border-blue-900/60 bg-gradient-to-br from-blue-950/60 to-gray-800' : 'border-blue-100 bg-gradient-to-br from-blue-50 via-white to-indigo-50'}`} aria-labelledby="builder-start-title">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>Comece por aqui</p>
+                  <h1 id="builder-start-title" className={`mt-1 text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Vamos criar o seu currículo</h1>
+                  <p className={`mt-1 max-w-xl text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Preencha primeiro os seus dados principais. Pode alterar o modelo e abrir o preview quando quiser.</p>
+                </div>
+                <div className={`hidden shrink-0 rounded-xl px-3 py-2 text-center sm:block ${isDark ? 'bg-gray-800/80' : 'bg-white/80'}`}>
+                  <span className={`block text-lg font-bold ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>{progress}%</span>
+                  <span className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>concluído</span>
+                </div>
+              </div>
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-200/80 dark:bg-gray-700">
+                <div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all duration-500" style={{ width: `${progress}%` }} />
+              </div>
+              <div className={`mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                {sectionOrder.slice(0, 3).map((section, index) => <span key={section} className={index === 0 ? (isDark ? 'font-semibold text-blue-300' : 'font-semibold text-blue-700') : ''}>{index + 1}. {sectionLabels[section]}</span>)}
+                <span>… e revisão final</span>
+              </div>
+            </section>
+
             {/* Toolbar */}
             <div className={`mb-4 p-3 rounded-lg border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
               {/* Linha 1: Template + Undo/Redo */}
@@ -247,6 +280,14 @@ function BuilderContent() {
                     title="Refazer (Ctrl+Y)"
                   >
                     <Redo2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={handleTogglePreview}
+                    className={`hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-colors ${isDark ? 'text-blue-300 hover:bg-gray-700' : 'text-blue-700 hover:bg-blue-50'}`}
+                    title={showPreview ? 'Fechar preview' : 'Abrir preview'}
+                  >
+                    {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPreview ? 'Fechar preview' : 'Ver preview'}
                   </button>
                 </div>
               </div>
@@ -324,17 +365,18 @@ function BuilderContent() {
               </div>
             </div>
 
-            {/* Ad banner */}
-            <div className={`mb-6 border border-dashed rounded-lg h-[60px] flex items-center justify-center ${isDark ? 'border-gray-700 bg-gray-800/50' : 'border-gray-300 bg-gray-100'}`}>
-              <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Espaço Publicitário</span>
-            </div>
-
             {renderForm()}
 
-            {/* Ad banner */}
-            <div className={`mt-6 border border-dashed rounded-lg h-[60px] flex items-center justify-center ${isDark ? 'border-gray-700 bg-gray-800/50' : 'border-gray-300 bg-gray-100'}`}>
-              <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Espaço Publicitário</span>
+            <div className={`mt-6 flex items-center justify-between gap-3 border-t pt-5 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+              <button type="button" onClick={() => currentSectionIndex > 0 && setActiveSection(sectionOrder[currentSectionIndex - 1])} disabled={currentSectionIndex <= 0} className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${currentSectionIndex > 0 ? (isDark ? 'text-gray-200 hover:bg-gray-800' : 'text-gray-700 hover:bg-gray-100') : 'cursor-not-allowed text-gray-400'}`}>
+                <ArrowLeft className="h-4 w-4" /> Anterior
+              </button>
+              <span className={`text-center text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Etapa {Math.max(currentSectionIndex + 1, 1)} de {sectionOrder.length}</span>
+              <button type="button" onClick={() => currentSectionIndex < sectionOrder.length - 1 && setActiveSection(sectionOrder[currentSectionIndex + 1])} disabled={currentSectionIndex >= sectionOrder.length - 1} className={`inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition-colors ${currentSectionIndex < sectionOrder.length - 1 ? 'hover:bg-blue-700' : 'cursor-not-allowed opacity-50'}`}>
+                Próximo <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
+
           </div>
         </div>
 

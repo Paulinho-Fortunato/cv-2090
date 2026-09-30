@@ -91,3 +91,12 @@
 .safe-area-bottom {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
+
+/* O documento adapta a densidade sem cortar conteúdo; o PDF mantém medidas próprias. */
+.resume-density-dense { font-size: 0.94em; }
+.resume-density-initial { min-height: 420px; }
+.resume-document p { overflow-wrap: anywhere; }
+@media print {
+  .resume-document { box-shadow: none !important; }
+  .resume-document > * { max-width: none !important; }
+}

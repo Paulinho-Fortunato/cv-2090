@@ -5,6 +5,7 @@ import { useAnalyticsStore } from '../../lib/analytics';
 import { translations } from '../../types/resume';
 import { TemplateSelector } from './TemplateSelector';
 import { TemplateId } from '../../types/resume';
+import { normalizeResumeData, getResumeReadiness } from '../../lib/resumeLayout';
 
 interface DownloadModalProps {
   isOpen: boolean;
@@ -47,6 +48,8 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
   const [showShareLink, setShowShareLink] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const language = useResumeStore((state) => state.language);
+  const resumeData = useResumeStore((state) => state.resumeData);
+  const readiness = getResumeReadiness(resumeData);
   const theme = useResumeStore((state) => state.theme);
   const setTemplate = useResumeStore((state) => state.setTemplate);
   const t = translations[language];
@@ -146,7 +149,13 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
       // Dynamic import para evitar problemas de inicialização
       const { pdf, Document, Page, Text, View, Image, StyleSheet } = await import('@react-pdf/renderer');
       
-      const { basics, experiences, education, certifications, projects, skills, photo } = useResumeStore.getState().resumeData;
+      const normalizedData = normalizeResumeData(useResumeStore.getState().resumeData);
+      const readiness = getResumeReadiness(normalizedData);
+      if (!readiness.canExport) {
+        alert('Preencha pelo menos o seu nome antes de gerar o currículo.');
+        return;
+      }
+      const { basics, experiences, education, certifications, projects, skills, photo } = normalizedData;
       const currentTemplate = useResumeStore.getState().template;
       
       // Validar foto antes de usar
@@ -155,7 +164,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
       // Estilos baseados no template selecionado
       const getStylesForTemplate = (template: string) => {
         const commonStyles = {
-          page: { padding: 30, fontFamily: 'Helvetica' },
+          page: { padding: readiness.density === 'dense' ? 24 : readiness.density === 'initial' ? 42 : 30, fontFamily: 'Helvetica', backgroundColor: '#ffffff' },
           headerContent: { flexDirection: 'row' as const, alignItems: 'center' },
           photo: { width: 64, height: 64, borderRadius: 32 },
           headerText: { flex: 1 },
@@ -259,7 +268,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
                   </View>
                 )}
                 <View style={styles.headerText}>
-                  <Text style={styles.name}>{basics.fullName || 'Seu Nome'}</Text>
+                  <Text style={styles.name}>{basics.fullName}</Text>
                   <Text style={styles.headline}>{basics.headline || ''}</Text>
                   <View style={{ flexDirection: 'row' as const, marginTop: 12, flexWrap: 'wrap' as const, gap: 12 }}>
                     {basics.email && <Text style={styles.contactText}>{basics.email}</Text>}
@@ -272,16 +281,16 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {basics.summary && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>RESUMO PROFISSIONAL</Text>
+                <Text style={styles.sectionTitle} minPresenceAhead={40}>RESUMO PROFISSIONAL</Text>
                 <Text style={styles.summary}>{basics.summary}</Text>
               </View>
             )}
 
             {experiences.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>EXPERIÊNCIA PROFISSIONAL</Text>
+                <Text style={styles.sectionTitle} minPresenceAhead={40}>EXPERIÊNCIA PROFISSIONAL</Text>
                 {experiences.map((exp, i) => (
-                  <View key={i} style={styles.expItem}>
+                  <View key={i} style={styles.expItem} wrap={false}>
                     <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.expPosition}>{exp.position}</Text>
@@ -299,9 +308,9 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {education.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>FORMAÇÃO ACADÊMICA</Text>
+                <Text style={styles.sectionTitle} minPresenceAhead={40}>FORMAÇÃO ACADÊMICA</Text>
                 {education.map((edu, i) => (
-                  <View key={i} style={styles.expItem}>
+                  <View key={i} style={styles.expItem} wrap={false}>
                     <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.expPosition}>{edu.degree} {edu.field ? `- ${edu.field}` : ''}</Text>
@@ -318,9 +327,9 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {certifications && certifications.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>HABILITAÇÕES PROFISSIONAIS</Text>
+                <Text style={styles.sectionTitle} minPresenceAhead={40}>HABILITAÇÕES PROFISSIONAIS</Text>
                 {certifications.map((cert, i) => (
-                  <View key={i} style={styles.expItem}>
+                  <View key={i} style={styles.expItem} wrap={false}>
                     <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.expPosition}>{cert.name}</Text>
@@ -338,9 +347,9 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {projects.length > 0 && (
               <View style={{ marginBottom: 15 }}>
-                <Text style={styles.sectionTitle}>PROJETOS</Text>
+                <Text style={styles.sectionTitle} minPresenceAhead={40}>PROJETOS</Text>
                 {projects.map((proj, i) => (
-                  <View key={i} style={styles.expItem}>
+                  <View key={i} style={styles.expItem} wrap={false}>
                     <Text style={styles.expPosition}>{proj.name}</Text>
                     {proj.technologies && <Text style={styles.expCompany}>{proj.technologies}</Text>}
                     {proj.description && <Text style={styles.summary}>{proj.description}</Text>}
@@ -351,7 +360,7 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
 
             {skills.length > 0 && (
               <View>
-                <Text style={styles.sectionTitle}>HABILIDADES</Text>
+                <Text style={styles.sectionTitle} minPresenceAhead={40}>HABILIDADES</Text>
                 <View style={{ flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: 8 }}>
                   {(skills || []).map((skill, i) => (
                     <View 
@@ -482,6 +491,15 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
           {/* Template Selector */}
           <TemplateSelector onSelect={handleTemplateSelect} />
 
+          <div className={`${readiness.canExport ? (isDark ? 'border-green-800 bg-green-900/20' : 'border-green-200 bg-green-50') : (isDark ? 'border-amber-800 bg-amber-900/20' : 'border-amber-200 bg-amber-50')} rounded-lg border p-4`}>
+            <p className={`text-sm font-semibold ${readiness.canExport ? (isDark ? 'text-green-300' : 'text-green-800') : (isDark ? 'text-amber-300' : 'text-amber-800')}`}>
+              {readiness.canExport ? 'O seu currículo está pronto para revisão.' : 'Ainda faltam dados essenciais.'}
+            </p>
+            <p className={`mt-1 text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              {readiness.canExport ? (readiness.recommendations.length ? `Para melhorar: ${readiness.recommendations.join(', ')}.` : 'As secções vazias serão ocultadas automaticamente no documento.') : `Para exportar, ${readiness.recommendations.join(', ')}.`}
+            </p>
+          </div>
+
           {/* ATS Score */}
           <div className={`${isDark ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-4 border ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
             <div className="flex items-center justify-between mb-2">
@@ -521,7 +539,8 @@ export function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
               <div className="space-y-3">
                 <button
                   onClick={handleDownloadPDF}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  disabled={!readiness.canExport}
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg transition-colors font-medium ${readiness.canExport ? 'bg-blue-600 text-white hover:bg-blue-700' : 'cursor-not-allowed bg-gray-300 text-gray-500'}`}
                 >
                   <Download className="w-5 h-5" />
                   {t.downloadPdf}

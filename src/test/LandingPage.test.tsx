@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { LandingPage } from '../pages/LandingPage';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ describe('LandingPage', () => {
       </BrowserRouter>
     );
     
-    const element = screen.getByText(/CV Builder/i);
+    const element = within(screen.getByRole('banner')).getByText('CV Builder');
     expect(element).toBeTruthy();
   });
 
@@ -22,7 +22,7 @@ describe('LandingPage', () => {
       </BrowserRouter>
     );
     
-    const element = screen.getByText(/Criar Currículo/i);
+    const element = screen.getByRole('link', { name: 'Criar Currículo Grátis' });
     expect(element).toBeTruthy();
   });
 });

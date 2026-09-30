@@ -85,7 +85,7 @@ export function BasicsForm() {
   }), [language]);
 
   const SectionHeader = ({ title, icon: Icon, section }: { title: string; icon: any; section: keyof typeof expandedSections }) => (
-    <div className={sectionHeaderClass} onClick={() => toggleSection(section)}>
+    <button type="button" className={`${sectionHeaderClass} w-full text-left`} onClick={() => toggleSection(section)} aria-expanded={expandedSections[section]}>
       <div className="flex items-center gap-2">
         <Icon className="w-5 h-5 text-blue-600" />
         <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{title}</h3>
@@ -95,7 +95,7 @@ export function BasicsForm() {
       ) : (
         <ChevronDown className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`} />
       )}
-    </div>
+    </button>
   );
 
   return (

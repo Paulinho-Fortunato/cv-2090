@@ -1,23 +1,8 @@
 import { ResumeData } from '../types/resume';
+import { AVAILABLE_MODELS, DEFAULT_MODEL, requestAI } from './aiClient';
 
-// OpenRouter API - https://openrouter.ai/
-// API Key configurada via variável de ambiente na Vercel
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
-
-// Modelos disponíveis na OpenRouter
-export const AVAILABLE_MODELS = [
-  { id: 'meta-llama/llama-3-8b-instruct', name: 'Llama 3 8B', provider: 'Meta', free: true },
-  { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B', provider: 'Mistral', free: true },
-  { id: 'openai/gpt-3.5-turbo', name: 'GPT-3.5 Turbo', provider: 'OpenAI', free: false },
-  { id: 'openai/gpt-4', name: 'GPT-4', provider: 'OpenAI', free: false },
-  { id: 'openai/gpt-4-turbo', name: 'GPT-4 Turbo', provider: 'OpenAI', free: false },
-  { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', provider: 'Anthropic', free: false },
-  { id: 'anthropic/claude-3-sonnet', name: 'Claude 3 Sonnet', provider: 'Anthropic', free: false },
-  { id: 'meta-llama/llama-3-70b-instruct', name: 'Llama 3 70B', provider: 'Meta', free: false },
-  { id: 'mistralai/mixtral-8x7b-instruct', name: 'Mixtral 8x7B', provider: 'Mistral', free: false },
-  { id: 'google/gemini-pro', name: 'Gemini Pro', provider: 'Google', free: false },
-];
+export { AVAILABLE_MODELS };
+export type { AIMessage } from './aiClient';
 
 export interface AISuggestion {
   type: 'summary' | 'experience' | 'skills' | 'improvement';
@@ -33,168 +18,57 @@ export interface CoverLetter {
 }
 
 class AIService {
-  private model: string = 'meta-llama/llama-3-8b-instruct'; // Modelo gratuito padrão
+  private model = DEFAULT_MODEL;
 
   constructor() {
-    this.loadConfig();
-  }
-
-  private loadConfig() {
     try {
       const storedModel = localStorage.getItem('openrouter-model');
-      if (storedModel) {
-        this.model = storedModel;
-      }
-    } catch (error) {
-      console.warn('localStorage não disponível, usando modelo padrão:', error);
-      // Fallback: usar modelo padrão já definido
+      if (AVAILABLE_MODELS.some((item) => item.id === storedModel)) this.model = storedModel as string;
+    } catch {
+      // O modelo padrão permanece em memória quando o storage não está disponível.
     }
   }
 
   getApiKey(): string {
-    return OPENROUTER_API_KEY;
+    return '';
   }
 
   setModel(modelId: string) {
+    if (!AVAILABLE_MODELS.some((item) => item.id === modelId)) return;
     this.model = modelId;
-    try {
-      localStorage.setItem('openrouter-model', modelId);
-    } catch (error) {
-      console.warn('Não foi possível salvar modelo em localStorage:', error);
-      // Fallback: modelo fica em memória apenas nesta sessão
-    }
+    try { localStorage.setItem('openrouter-model', modelId); } catch { /* sessão atual */ }
   }
 
-  getModel(): string {
-    return this.model;
+  getModel() { return this.model; }
+  isConfigured() { return true; }
+
+  private async makeRequest(messages: { role: 'system' | 'user' | 'assistant'; content: string }[]) {
+    return requestAI(messages, this.model);
   }
 
-  isConfigured(): boolean {
-    return OPENROUTER_API_KEY.length > 0;
-  }
-
-  private async makeRequest(messages: any[]): Promise<string> {
-    if (!this.isConfigured()) {
-      throw new Error('API Key não configurada');
-    }
-
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'CV Builder',
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Erro na API');
-    }
-
-    const data = await response.json();
-    return data.choices[0]?.message?.content || '';
-  }
-
-  // Gera sugestões de melhoria para o currículo
   async analyzeResume(resumeData: ResumeData): Promise<AISuggestion[]> {
-    if (!this.isConfigured()) {
-      return this.getFallbackSuggestions(resumeData);
-    }
-
     try {
-      // Garantir que resumeData tem a estrutura correta
-      const safeData = {
-        basics: resumeData.basics || ({} as any),
-        experiences: resumeData.experiences || [],
-        education: resumeData.education || [],
-        projects: resumeData.projects || [],
-        skills: resumeData.skills || [],
-      };
-
-      const prompt = `Analise este currículo e forneça sugestões de melhoria em formato JSON:
-
-Nome: ${safeData.basics.fullName || ''}
-Cargo: ${safeData.basics.headline || ''}
-Resumo: ${safeData.basics.summary || ''}
-Experiências: ${safeData.experiences.length}
-Educação: ${safeData.education.length}
-Skills: ${safeData.skills.join(', ')}
-
-Forneça 3-5 sugestões específicas e acionáveis em JSON:
-[
-  {
-    "type": "summary|experience|skills|improvement",
-    "title": "Título curto",
-    "content": "Sugestão detalhada",
-    "confidence": 0.85
-  }
-]
-
-Responda APENAS com o JSON, sem texto adicional.`;
-
+      const prompt = `Analise este currículo e forneça 3-5 sugestões específicas e acionáveis em JSON. Responda apenas com um array JSON com type, title, content e confidence.\nNome: ${resumeData.basics.fullName}\nCargo: ${resumeData.basics.headline}\nResumo: ${resumeData.basics.summary}\nExperiências: ${resumeData.experiences.length}\nEducação: ${resumeData.education.length}\nSkills: ${resumeData.skills.join(', ')}`;
       const response = await this.makeRequest([
-        { role: 'system', content: 'Você é um especialista em currículos e carreiras. Responda apenas em JSON quando solicitado.' },
-        { role: 'user', content: prompt }
+        { role: 'system', content: 'Você é um especialista em currículos. Responda apenas em JSON quando solicitado.' },
+        { role: 'user', content: prompt },
       ]);
-
-      // Extrair JSON da resposta
       const jsonMatch = response.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
-        try {
-          const parsed = JSON.parse(jsonMatch[0]);
-          
-          // Validar estrutura mínima
-          if (Array.isArray(parsed) && parsed.length > 0 && 
-              parsed.every((item: any) => item.type && item.title && item.content)) {
-            return parsed;
-          } else {
-            console.warn('Resposta da IA com estrutura inesperada');
-            return this.getFallbackSuggestions(resumeData);
-          }
-        } catch (parseError) {
-          console.error('Erro ao fazer parse da resposta da IA:', parseError);
-          return this.getFallbackSuggestions(resumeData);
-        }
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (Array.isArray(parsed) && parsed.length > 0 && parsed.every((item) => item?.type && item?.title && item?.content)) return parsed;
       }
-
-      return this.getFallbackSuggestions(resumeData);
     } catch (error) {
       console.error('Erro ao analisar currículo com IA:', error);
-      return this.getFallbackSuggestions(resumeData);
     }
+    return this.getFallbackSuggestions(resumeData);
   }
 
-  // Gera resumo profissional baseado nos dados
   async generateSummary(resumeData: ResumeData): Promise<string> {
-    if (!this.isConfigured()) {
-      return this.getFallbackSummary(resumeData);
-    }
-
     try {
-      const safeData = {
-        basics: resumeData.basics || ({} as any),
-        experiences: resumeData.experiences || [],
-        skills: resumeData.skills || [],
-      };
-
-      const prompt = `Crie um resumo profissional conciso (3-4 linhas) para:
-Cargo: ${safeData.basics.headline || ''}
-Experiências: ${safeData.experiences.map(e => `${e.position} na ${e.company}`).join(', ')}
-Skills: ${safeData.skills.slice(0, 10).join(', ')}
-
-O resumo deve ser profissional, direto e destacar os pontos fortes. Responda apenas com o resumo.`;
-
       return await this.makeRequest([
         { role: 'system', content: 'Você é um especialista em escrita de currículos profissionais.' },
-        { role: 'user', content: prompt }
+        { role: 'user', content: `Crie um resumo profissional conciso (3-4 linhas) para ${resumeData.basics.headline}. Experiências: ${resumeData.experiences.map((item) => `${item.position} na ${item.company}`).join(', ')}. Skills: ${resumeData.skills.slice(0, 10).join(', ')}. Responda apenas com o resumo.` },
       ]);
     } catch (error) {
       console.error('Erro ao gerar resumo:', error);
@@ -202,170 +76,42 @@ O resumo deve ser profissional, direto e destacar os pontos fortes. Responda ape
     }
   }
 
-  // Gera carta de apresentação
-  async generateCoverLetter(
-    resumeData: ResumeData,
-    jobDescription: string,
-    tone: 'formal' | 'casual' | 'enthusiastic' = 'formal'
-  ): Promise<CoverLetter> {
-    if (!this.isConfigured()) {
-      return this.getFallbackCoverLetter(resumeData, jobDescription, tone);
-    }
-
+  async generateCoverLetter(resumeData: ResumeData, jobDescription: string, tone: 'formal' | 'casual' | 'enthusiastic' = 'formal'): Promise<CoverLetter> {
     try {
-      const toneDescription = {
-        formal: 'formal e profissional',
-        casual: 'casual e amigável',
-        enthusiastic: 'entusiasta e motivado'
-      }[tone];
-
-      const prompt = `Crie uma carta de apresentação ${toneDescription} em português para:
-
-Candidato: ${resumeData.basics.fullName}
-Cargo Desejado: ${resumeData.basics.headline}
-Experiências Principais: ${resumeData.experiences.slice(0, 3).map(e => `${e.position} na ${e.company}`).join(', ')}
-Skills: ${(resumeData.skills || []).slice(0, 8).join(', ')}
-
-Descrição da Vaga:
-${jobDescription}
-
-A carta deve:
-- Ter 3-4 parágrafos
-- Conectar as experiências do candidato com os requisitos da vaga
-- Ser ${toneDescription}
-- Ter entre 250-350 palavras
-- Ser persuasiva e profissional`;
-
       const content = await this.makeRequest([
-        { role: 'system', content: 'Você é um especialista em escrita de cartas de apresentação profissionais.' },
-        { role: 'user', content: prompt }
+        { role: 'system', content: 'Você é um especialista em cartas de apresentação profissionais.' },
+        { role: 'user', content: `Crie uma carta de apresentação ${tone} em português para ${resumeData.basics.fullName}, cargo ${resumeData.basics.headline}. Skills: ${resumeData.skills.slice(0, 8).join(', ')}. Descrição da vaga:\n${jobDescription}. Escreva 3-4 parágrafos, entre 250-350 palavras.` },
       ]);
-
-      return {
-        content: content.trim(),
-        tone,
-        wordCount: content.split(/\s+/).length,
-      };
+      return { content: content.trim(), tone, wordCount: content.trim().split(/\s+/).filter(Boolean).length };
     } catch (error) {
-      console.error('Erro ao gerar carta de apresentação:', error);
-      return this.getFallbackCoverLetter(resumeData, jobDescription, tone);
+      console.error('Erro ao gerar carta:', error);
+      return this.getFallbackCoverLetter(resumeData, tone);
     }
   }
 
-  // Sugere melhorias para uma experiência específica
-  async improveExperienceDescription(
-    position: string,
-    company: string,
-    currentDescription: string
-  ): Promise<string> {
-    if (!this.isConfigured()) {
-      return currentDescription;
-    }
-
+  async improveExperienceDescription(position: string, company: string, currentDescription: string) {
     try {
-      const prompt = `Melhore esta descrição de experiência profissional, tornando-a mais impactante e orientada a resultados:
-
-Cargo: ${position}
-Empresa: ${company}
-Descrição Atual: ${currentDescription}
-
-Forneça apenas a descrição melhorada, sem explicações adicionais.`;
-
-      return await this.makeRequest([
-        { role: 'system', content: 'Você é um especialista em otimização de currículos profissionais.' },
-        { role: 'user', content: prompt }
-      ]);
-    } catch (error) {
-      console.error('Erro ao melhorar descrição:', error);
-      return currentDescription;
-    }
+      return await this.makeRequest([{ role: 'user', content: `Melhore esta descrição de experiência orientando-a a resultados. Cargo: ${position}. Empresa: ${company}. Descrição: ${currentDescription}. Responda apenas com a descrição melhorada.` }]);
+    } catch { return currentDescription; }
   }
 
-  // Fallback suggestions quando IA não está configurada
-  private getFallbackSuggestions(resumeData: ResumeData): AISuggestion[] {
+  private getFallbackSuggestions(data: ResumeData): AISuggestion[] {
     const suggestions: AISuggestion[] = [];
-
-    if (!resumeData.basics.summary || resumeData.basics.summary.length < 50) {
-      suggestions.push({
-        type: 'summary',
-        title: 'Resumo Profissional',
-        content: 'Adicione um resumo profissional mais detalhado (mínimo 50 caracteres) destacando suas principais competências e objetivos de carreira.',
-        confidence: 0.9,
-      });
-    }
-
-    if (!resumeData.experiences || resumeData.experiences.length === 0) {
-      suggestions.push({
-        type: 'experience',
-        title: 'Experiência Profissional',
-        content: 'Adicione pelo menos uma experiência profissional. Use verbos de ação e quantifique resultados quando possível.',
-        confidence: 0.95,
-      });
-    } else {
-      const hasDescription = resumeData.experiences.some(e => e.description && e.description.length > 50);
-      if (!hasDescription) {
-        suggestions.push({
-          type: 'experience',
-          title: 'Descrições das Experiências',
-          content: 'Detalhe melhor suas experiências profissionais. Inclua responsabilidades, conquistas e resultados mensuráveis.',
-          confidence: 0.85,
-        });
-      }
-    }
-
-    if (!resumeData.skills || resumeData.skills.length < 5) {
-      suggestions.push({
-        type: 'skills',
-        title: 'Habilidades',
-        content: 'Adicione mais habilidades técnicas e comportamentais relevantes para sua área. Recomenda-se pelo menos 8-10 skills.',
-        confidence: 0.8,
-      });
-    }
-
-    if (!resumeData.basics.linkedin && !resumeData.basics.github) {
-      suggestions.push({
-        type: 'improvement',
-        title: 'Links Profissionais',
-        content: 'Adicione links para seu LinkedIn e/ou GitHub para aumentar sua credibilidade profissional.',
-        confidence: 0.75,
-      });
-    }
-
+    if (!data.basics.summary || data.basics.summary.length < 50) suggestions.push({ type: 'summary', title: 'Resumo Profissional', content: 'Adicione um resumo profissional detalhado, destacando competências e objetivos.', confidence: 0.9 });
+    if (!data.experiences.length) suggestions.push({ type: 'experience', title: 'Experiência Profissional', content: 'Adicione pelo menos uma experiência e quantifique resultados quando possível.', confidence: 0.95 });
+    else if (!data.experiences.some((item) => item.description?.length > 50)) suggestions.push({ type: 'experience', title: 'Descrições das Experiências', content: 'Detalhe responsabilidades, conquistas e resultados mensuráveis.', confidence: 0.85 });
+    if (data.skills.length < 5) suggestions.push({ type: 'skills', title: 'Habilidades', content: 'Adicione mais habilidades relevantes para sua área.', confidence: 0.8 });
+    if (!data.basics.linkedin && !data.basics.github) suggestions.push({ type: 'improvement', title: 'Links Profissionais', content: 'Adicione links para LinkedIn ou GitHub.', confidence: 0.75 });
     return suggestions;
   }
 
-  private getFallbackSummary(resumeData: ResumeData): string {
-    const skills = (resumeData.skills || []).slice(0, 5).join(', ');
-    const experience = (resumeData.experiences || []).length > 0 
-      ? `com experiência em ${resumeData.experiences[0].position}` 
-      : '';
-
-    return `Profissional ${experience} com habilidades em ${skills}. Busco oportunidades para contribuir com minha expertise e desenvolver novas competências na área de ${resumeData.basics.headline || 'atuação'}.`;
+  private getFallbackSummary(data: ResumeData) {
+    return `Profissional ${data.experiences[0]?.position ? `com experiência como ${data.experiences[0].position}` : ''} com habilidades em ${data.skills.slice(0, 5).join(', ')}. Busco oportunidades para contribuir na área de ${data.basics.headline || 'atuação'}.`;
   }
 
-  private getFallbackCoverLetter(
-    resumeData: ResumeData,
-    jobDescription: string,
-    tone: string
-  ): CoverLetter {
-    const content = `Prezados,
-
-Com grande entusiasmo, submeto minha candidatura à vaga apresentada. Como profissional com experiência em ${resumeData.basics.headline || 'minha área de atuação'}, acredito que minhas competências estão alinhadas com os requisitos da posição.
-
-Ao longo da minha trajetória, desenvolvi habilidades em ${(resumeData.skills || []).slice(0, 5).join(', ')}, que me permitem contribuir efetivamente para os objetivos da empresa. ${(resumeData.experiences || []).length > 0 ? `Minha experiência mais recente como ${resumeData.experiences[0].position} na ${resumeData.experiences[0].company} me proporcionou insights valiosos sobre ${resumeData.experiences[0].description?.substring(0, 100) || 'a área'}.` : ''}
-
-Estou motivado(a) pela oportunidade de aplicar meu conhecimento e crescer profissionalmente em sua organização. Acredito que minha combinação de habilidades técnicas e compromisso com resultados pode agregar valor significativo à equipe.
-
-Agradeço a atenção e coloco-me à disposição para uma entrevista.
-
-Atenciosamente,
-${resumeData.basics.fullName}`;
-
-    return {
-      content,
-      tone,
-      wordCount: content.split(/\s+/).length,
-    };
+  private getFallbackCoverLetter(data: ResumeData, tone: string): CoverLetter {
+    const content = `Prezados,\n\nSubmeto minha candidatura à oportunidade apresentada. Como profissional ${data.basics.headline || 'da área'}, acredito que minhas competências estão alinhadas com os requisitos da posição.\n\nDesenvolvi habilidades em ${data.skills.slice(0, 5).join(', ')}, que me permitem contribuir para os objetivos da empresa.\n\nAgradeço a atenção e coloco-me à disposição para uma entrevista.\n\nAtenciosamente,\n${data.basics.fullName}`;
+    return { content, tone, wordCount: content.split(/\s+/).length };
   }
 }
 

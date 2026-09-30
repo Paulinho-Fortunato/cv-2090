@@ -2,20 +2,24 @@ import { memo, useMemo } from 'react';
 import { useResumeStore } from '../../lib/store';
 import { Mail, Phone, MapPin, Briefcase, GraduationCap, Award, Globe, Link2, FolderKanban, Code, Linkedin, Github, Twitter, Instagram, Youtube, Calendar, Flag, Target, DollarSign, Languages, Sparkles, Heart, BadgeCheck } from 'lucide-react';
 import { translations } from '../../types/resume';
-import { useResumeBasics, useResumeExperiences, useResumeEducation, useResumeProjects, useResumeSkills, useResumePhoto, useLanguage, useTemplate, useTheme } from '../../hooks/useResume';
+import { normalizeResumeData, getResumeDensity } from '../../lib/resumeLayout';
+import { useResumeBasics, useResumeExperiences, useResumeEducation, useResumeProjects, useResumeSkills, useLanguage, useTemplate, useTheme } from '../../hooks/useResume';
 
 function PreviewComponent() {
-  const basics = useResumeBasics();
-  const experiences = useResumeExperiences();
-  const education = useResumeEducation();
-  const certifications = useResumeStore((state) => state.resumeData.certifications);
-  const projects = useResumeProjects();
-  const skills = useResumeSkills();
-  const photo = useResumePhoto();
+  const rawBasics = useResumeBasics();
+  const rawExperiences = useResumeExperiences();
+  const rawEducation = useResumeEducation();
+  const rawCertifications = useResumeStore((state) => state.resumeData.certifications);
+  const rawProjects = useResumeProjects();
+  const rawSkills = useResumeSkills();
+  const rawPhoto = useResumeStore((state) => state.resumeData.photo);
+  const rawSectionsConfig = useResumeStore((state) => state.resumeData.sectionsConfig);
   const language = useLanguage();
   const template = useTemplate();
   const theme = useTheme();
-  const sectionsConfig = useResumeStore((state) => state.resumeData.sectionsConfig);
+  const normalizedData = useMemo(() => normalizeResumeData({ basics: rawBasics, experiences: rawExperiences, education: rawEducation, certifications: rawCertifications, projects: rawProjects, skills: rawSkills, photo: rawPhoto, sectionsConfig: rawSectionsConfig }), [rawBasics, rawExperiences, rawEducation, rawCertifications, rawProjects, rawSkills, rawPhoto, rawSectionsConfig]);
+  const { basics, experiences, education, certifications, projects, skills, photo, sectionsConfig } = normalizedData;
+  const density = getResumeDensity(normalizedData);
 
   const t = translations[language];
 
@@ -77,10 +81,10 @@ function PreviewComponent() {
                   <div key={exp.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
                       <div className="min-w-0 flex-1">
-                        <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                        <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} break-words`}>
                           {exp.position || 'Cargo'}
                         </p>
-                        <p className="text-xs text-blue-600 font-medium truncate">
+                        <p className="text-xs text-blue-600 font-medium break-words">
                           {exp.company || 'Empresa'}
                         </p>
                       </div>
@@ -89,7 +93,7 @@ function PreviewComponent() {
                       </span>
                     </div>
                     {exp.description && (
-                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed line-clamp-3`}>
+                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed`}>
                         {exp.description}
                       </p>
                     )}
@@ -113,10 +117,10 @@ function PreviewComponent() {
                   <div key={edu.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
                       <div className="min-w-0 flex-1">
-                        <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                        <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} break-words`}>
                           {edu.degree} {edu.field && `- ${edu.field}`}
                         </p>
-                        <p className="text-xs text-blue-600 font-medium truncate">
+                        <p className="text-xs text-blue-600 font-medium break-words">
                           {edu.institution || 'Instituição'}
                         </p>
                       </div>
@@ -144,10 +148,10 @@ function PreviewComponent() {
                   <div key={cert.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
                       <div className="min-w-0 flex-1">
-                        <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                        <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} break-words`}>
                           {cert.name}
                         </p>
-                        <p className="text-xs text-blue-600 font-medium truncate">
+                        <p className="text-xs text-blue-600 font-medium break-words">
                           {cert.institution}
                         </p>
                       </div>
@@ -157,7 +161,7 @@ function PreviewComponent() {
                       </span>
                     </div>
                     {cert.description && (
-                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed line-clamp-2`}>
+                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed`}>
                         {cert.description}
                       </p>
                     )}
@@ -179,14 +183,14 @@ function PreviewComponent() {
               <div className="space-y-2 sm:space-y-3">
                 {projects.map((proj) => (
                   <div key={proj.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
-                    <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                    <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} break-words`}>
                       {proj.name}
                     </p>
                     {proj.technologies && (
-                      <p className="text-xs text-blue-600 truncate">{proj.technologies}</p>
+                      <p className="text-xs text-blue-600 break-words">{proj.technologies}</p>
                     )}
                     {proj.description && (
-                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 line-clamp-2`}>
+                      <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
                         {proj.description}
                       </p>
                     )}
@@ -238,43 +242,43 @@ function PreviewComponent() {
             />
           )}
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-2xl font-bold truncate">
+            <h1 className="text-lg sm:text-2xl font-bold break-words">
               {basics.fullName || 'Seu Nome'}
             </h1>
-            <p className="text-blue-100 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
+            <p className="text-blue-100 text-xs sm:text-sm mt-0.5 sm:mt-1 break-words">
               {basics.headline || 'Sua Profissão'}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-4 mt-3 sm:mt-4 text-xs">
           {basics.email && (
-            <span className="flex items-center gap-1 text-blue-100 truncate">
+            <span className="flex items-center gap-1 text-blue-100 break-words">
               <Mail className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.email}</span>
+              <span className="break-words">{basics.email}</span>
             </span>
           )}
           {basics.phone && (
-            <span className="flex items-center gap-1 text-blue-100 truncate">
+            <span className="flex items-center gap-1 text-blue-100 break-words">
               <Phone className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.phone}</span>
+              <span className="break-words">{basics.phone}</span>
             </span>
           )}
           {basics.location && (
-            <span className="flex items-center gap-1 text-blue-100 truncate">
+            <span className="flex items-center gap-1 text-blue-100 break-words">
               <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.location}</span>
+              <span className="break-words">{basics.location}</span>
             </span>
           )}
           {basics.website && (
-            <span className="flex items-center gap-1 text-blue-100 truncate">
+            <span className="flex items-center gap-1 text-blue-100 break-words">
               <Globe className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.website}</span>
+              <span className="break-words">{basics.website}</span>
             </span>
           )}
           {basics.linkedin && (
-            <span className="flex items-center gap-1 text-blue-100 truncate">
+            <span className="flex items-center gap-1 text-blue-100 break-words">
               <Linkedin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.linkedin}</span>
+              <span className="break-words">{basics.linkedin}</span>
             </span>
           )}
         </div>
@@ -441,10 +445,10 @@ function PreviewComponent() {
                 <div key={exp.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
                     <div className="min-w-0 flex-1">
-                      <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                      <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} break-words`}>
                         {exp.position || 'Cargo'}
                       </p>
-                      <p className="text-xs text-blue-600 font-medium truncate">
+                      <p className="text-xs text-blue-600 font-medium break-words">
                         {exp.company || 'Organização'}
                       </p>
                     </div>
@@ -453,7 +457,7 @@ function PreviewComponent() {
                     </span>
                   </div>
                   {exp.description && (
-                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed line-clamp-3`}>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed`}>
                       {exp.description}
                     </p>
                   )}
@@ -476,10 +480,10 @@ function PreviewComponent() {
                 <div key={edu.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
                     <div className="min-w-0 flex-1">
-                      <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                      <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} break-words`}>
                         {edu.degree} {edu.field && `- ${edu.field}`}
                       </p>
-                      <p className="text-xs text-blue-600 font-medium truncate">
+                      <p className="text-xs text-blue-600 font-medium break-words">
                         {edu.institution || 'Instituição de Ensino'}
                       </p>
                     </div>
@@ -507,10 +511,10 @@ function PreviewComponent() {
                 <div key={cert.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
                     <div className="min-w-0 flex-1">
-                      <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                      <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} break-words`}>
                         {cert.name}
                       </p>
-                      <p className="text-xs text-blue-600 font-medium truncate">
+                      <p className="text-xs text-blue-600 font-medium break-words">
                         {cert.institution}
                       </p>
                     </div>
@@ -520,7 +524,7 @@ function PreviewComponent() {
                     </span>
                   </div>
                   {cert.description && (
-                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed line-clamp-2`}>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed`}>
                       {cert.description}
                     </p>
                   )}
@@ -541,14 +545,14 @@ function PreviewComponent() {
             <div className="space-y-2 sm:space-y-3">
               {projects.map((proj) => (
                 <div key={proj.id} className={`border-l-2 ${isDark ? 'border-blue-800' : 'border-blue-200'} pl-2 sm:pl-3`}>
-                  <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} truncate`}>
+                  <p className={`text-xs sm:text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'} break-words`}>
                     {proj.name}
                   </p>
                   {proj.technologies && (
-                    <p className="text-xs text-blue-600 truncate">{proj.technologies}</p>
+                    <p className="text-xs text-blue-600 break-words">{proj.technologies}</p>
                   )}
                   {proj.description && (
-                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 line-clamp-2`}>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
                       {proj.description}
                     </p>
                   )}
@@ -602,22 +606,22 @@ function PreviewComponent() {
             />
           )}
           <div className="flex-1 min-w-0">
-            <h1 className={`text-xl sm:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+            <h1 className={`text-xl sm:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
               {basics.fullName || 'Seu Nome'}
             </h1>
-            <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 truncate`}>
+            <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 break-words`}>
               {basics.headline || 'Seu Cargo'}
             </p>
           </div>
         </div>
         <div className={`flex flex-wrap gap-x-4 gap-y-1 mt-3 sm:mt-4 text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-          {basics.email && <span className="truncate">{basics.email}</span>}
-          {basics.phone && <span className="truncate">{basics.phone}</span>}
-          {basics.location && <span className="truncate">{basics.location}</span>}
+          {basics.email && <span className="break-words">{basics.email}</span>}
+          {basics.phone && <span className="break-words">{basics.phone}</span>}
+          {basics.location && <span className="break-words">{basics.location}</span>}
           {basics.linkedin && (
-            <span className="flex items-center gap-1 truncate">
+            <span className="flex items-center gap-1 break-words">
               <Linkedin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.linkedin}</span>
+              <span className="break-words">{basics.linkedin}</span>
             </span>
           )}
         </div>
@@ -645,10 +649,10 @@ function PreviewComponent() {
                 <div key={exp.id}>
                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
                     <div className="min-w-0 flex-1">
-                      <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                      <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
                         {exp.position}
                       </p>
-                      <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} italic truncate`}>
+                      <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} italic break-words`}>
                         {exp.company}
                       </p>
                     </div>
@@ -677,10 +681,10 @@ function PreviewComponent() {
                 <div key={edu.id}>
                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
                     <div className="min-w-0 flex-1">
-                      <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                      <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
                         {edu.degree} {edu.field && `- ${edu.field}`}
                       </p>
-                      <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                      <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} break-words`}>
                         {edu.institution}
                       </p>
                     </div>
@@ -706,10 +710,10 @@ function PreviewComponent() {
                 <div key={cert.id}>
                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
                     <div className="min-w-0 flex-1">
-                      <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                      <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
                         {cert.name}
                       </p>
-                      <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                      <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} break-words`}>
                         {cert.institution}
                       </p>
                     </div>
@@ -768,32 +772,32 @@ function PreviewComponent() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <Code className="w-4 h-4 text-green-500 flex-shrink-0" />
-              <h1 className={`text-lg sm:text-xl font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+              <h1 className={`text-lg sm:text-xl font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
                 {basics.fullName || 'dev_name'}
               </h1>
             </div>
-            <p className={`text-xs sm:text-sm font-mono ${isDark ? 'text-green-400' : 'text-green-600'} mt-1 truncate`}>
+            <p className={`text-xs sm:text-sm font-mono ${isDark ? 'text-green-400' : 'text-green-600'} mt-1 break-words`}>
               {basics.headline || '// your_role'}
             </p>
           </div>
         </div>
         <div className={`flex flex-wrap gap-2 sm:gap-3 mt-3 sm:mt-4 text-xs font-mono ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
           {basics.email && (
-            <span className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded truncate">
+            <span className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded break-words">
               <Mail className="w-3 h-3 text-green-500 flex-shrink-0" />
-              <span className="truncate">{basics.email}</span>
+              <span className="break-words">{basics.email}</span>
             </span>
           )}
           {basics.phone && (
-            <span className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded truncate">
+            <span className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded break-words">
               <Phone className="w-3 h-3 text-green-500 flex-shrink-0" />
-              <span className="truncate">{basics.phone}</span>
+              <span className="break-words">{basics.phone}</span>
             </span>
           )}
           {basics.github && (
-            <span className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded truncate">
+            <span className="flex items-center gap-1 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded break-words">
               <Github className="w-3 h-3 text-green-500 flex-shrink-0" />
-              <span className="truncate">{basics.github}</span>
+              <span className="break-words">{basics.github}</span>
             </span>
           )}
         </div>
@@ -818,10 +822,10 @@ function PreviewComponent() {
                 <div key={exp.id} className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
                     <div className="min-w-0 flex-1">
-                      <p className={`text-xs sm:text-sm font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                      <p className={`text-xs sm:text-sm font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
                         {exp.position}
                       </p>
-                      <p className={`text-xs font-mono ${isDark ? 'text-green-400' : 'text-green-600'} truncate`}>
+                      <p className={`text-xs font-mono ${isDark ? 'text-green-400' : 'text-green-600'} break-words`}>
                         @ {exp.company}
                       </p>
                     </div>
@@ -872,10 +876,10 @@ function PreviewComponent() {
             <div className="space-y-2">
               {certifications.map((cert) => (
                 <div key={cert.id} className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <p className={`text-xs sm:text-sm font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                  <p className={`text-xs sm:text-sm font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
                     {cert.name}
                   </p>
-                  <p className={`text-xs font-mono ${isDark ? 'text-green-400' : 'text-green-600'} truncate`}>
+                  <p className={`text-xs font-mono ${isDark ? 'text-green-400' : 'text-green-600'} break-words`}>
                     @ {cert.institution}
                   </p>
                   {cert.date && (
@@ -897,11 +901,11 @@ function PreviewComponent() {
             <div className="space-y-2">
               {projects.map((proj) => (
                 <div key={proj.id} className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg border ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <p className={`text-xs sm:text-sm font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                  <p className={`text-xs sm:text-sm font-mono font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
                     {proj.name}
                   </p>
                   {proj.technologies && (
-                    <p className={`text-xs font-mono ${isDark ? 'text-green-400' : 'text-green-600'} truncate`}>
+                    <p className={`text-xs font-mono ${isDark ? 'text-green-400' : 'text-green-600'} break-words`}>
                       [{proj.technologies}]
                     </p>
                   )}
@@ -934,24 +938,24 @@ function PreviewComponent() {
             />
           )}
           <div className="flex-1 min-w-0">
-            <h1 className={`text-base sm:text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+            <h1 className={`text-base sm:text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
               {basics.fullName || 'Seu Nome'}
             </h1>
-            <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'} truncate`}>
+            <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'} break-words`}>
               {basics.headline || 'Seu Cargo'}
             </p>
           </div>
         </div>
         <div className={`flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px] sm:text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-          {basics.email && <span className="truncate">{basics.email}</span>}
-          {basics.phone && <span className="truncate">{basics.phone}</span>}
-          {basics.location && <span className="truncate">{basics.location}</span>}
+          {basics.email && <span className="break-words">{basics.email}</span>}
+          {basics.phone && <span className="break-words">{basics.phone}</span>}
+          {basics.location && <span className="break-words">{basics.location}</span>}
         </div>
       </div>
       
       <div className="p-4 space-y-3">
         {basics.summary && (
-          <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-700'} leading-relaxed line-clamp-3`}>
+          <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-700'} leading-relaxed`}>
             {basics.summary}
           </p>
         )}
@@ -967,10 +971,10 @@ function PreviewComponent() {
                 <div className="space-y-2">
                   {experiences.slice(0, 3).map((exp) => (
                     <div key={exp.id}>
-                      <p className={`text-xs font-semibold ${isDark ? 'text-gray-200' : 'text-gray-900'} truncate`}>
+                      <p className={`text-xs font-semibold ${isDark ? 'text-gray-200' : 'text-gray-900'} break-words`}>
                         {exp.position}
                       </p>
-                      <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                      <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-gray-600'} break-words`}>
                         {exp.company} | {formatDate(exp.startDate)} - {exp.current ? 'Atual' : formatDate(exp.endDate)}
                       </p>
                     </div>
@@ -987,10 +991,10 @@ function PreviewComponent() {
                 <div className="space-y-1">
                   {education.slice(0, 2).map((edu) => (
                     <div key={edu.id}>
-                      <p className={`text-xs font-semibold ${isDark ? 'text-gray-200' : 'text-gray-900'} truncate`}>
+                      <p className={`text-xs font-semibold ${isDark ? 'text-gray-200' : 'text-gray-900'} break-words`}>
                         {edu.degree}
                       </p>
-                      <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                      <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-gray-600'} break-words`}>
                         {edu.institution}
                       </p>
                     </div>
@@ -1032,10 +1036,10 @@ function PreviewComponent() {
                 <div className="space-y-1">
                   {certifications.slice(0, 3).map((cert) => (
                     <div key={cert.id}>
-                      <p className={`text-xs font-semibold ${isDark ? 'text-gray-200' : 'text-gray-900'} truncate`}>
+                      <p className={`text-xs font-semibold ${isDark ? 'text-gray-200' : 'text-gray-900'} break-words`}>
                         {cert.name}
                       </p>
-                      <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                      <p className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-gray-600'} break-words`}>
                         {cert.institution} • {formatDate(cert.date)}
                       </p>
                     </div>
@@ -1052,7 +1056,7 @@ function PreviewComponent() {
                 <div className="space-y-1">
                   {projects.slice(0, 2).map((proj) => (
                     <div key={proj.id}>
-                      <p className={`text-xs font-semibold ${isDark ? 'text-gray-200' : 'text-gray-900'} truncate`}>
+                      <p className={`text-xs font-semibold ${isDark ? 'text-gray-200' : 'text-gray-900'} break-words`}>
                         {proj.name}
                       </p>
                     </div>
@@ -1086,31 +1090,31 @@ function PreviewComponent() {
             />
           )}
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-3xl font-bold truncate drop-shadow-lg">
+            <h1 className="text-xl sm:text-3xl font-bold break-words drop-shadow-lg">
               {basics.fullName || 'Seu Nome'}
             </h1>
-            <p className="text-white/90 text-xs sm:text-sm mt-1 truncate">
+            <p className="text-white/90 text-xs sm:text-sm mt-1 break-words">
               {basics.headline || 'Seu Cargo'}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-3 mt-3 sm:mt-4 text-xs">
           {basics.email && (
-            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full truncate">
+            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full break-words">
               <Mail className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.email}</span>
+              <span className="break-words">{basics.email}</span>
             </span>
           )}
           {basics.phone && (
-            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full truncate">
+            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full break-words">
               <Phone className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.phone}</span>
+              <span className="break-words">{basics.phone}</span>
             </span>
           )}
           {basics.location && (
-            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full truncate">
+            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-full break-words">
               <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.location}</span>
+              <span className="break-words">{basics.location}</span>
             </span>
           )}
         </div>
@@ -1136,10 +1140,10 @@ function PreviewComponent() {
                   <div className="absolute left-0 top-0 w-2 h-2 bg-purple-500 rounded-full -translate-x-[5px]"></div>
                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
                     <div className="min-w-0 flex-1">
-                      <p className={`text-xs sm:text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                      <p className={`text-xs sm:text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
                         {exp.position}
                       </p>
-                      <p className="text-xs text-purple-600 font-medium truncate">
+                      <p className="text-xs text-purple-600 font-medium break-words">
                         {exp.company}
                       </p>
                     </div>
@@ -1148,7 +1152,7 @@ function PreviewComponent() {
                     </span>
                   </div>
                   {exp.description && (
-                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed line-clamp-2`}>
+                    <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'} mt-1 leading-relaxed`}>
                       {exp.description}
                     </p>
                   )}
@@ -1168,10 +1172,10 @@ function PreviewComponent() {
             <div className="space-y-2">
               {certifications.map((cert) => (
                 <div key={cert.id} className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-3 rounded-lg">
-                  <p className={`text-xs sm:text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'} truncate`}>
+                  <p className={`text-xs sm:text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'} break-words`}>
                     {cert.name}
                   </p>
-                  <p className="text-xs text-purple-600 truncate">
+                  <p className="text-xs text-purple-600 break-words">
                     {cert.institution}
                   </p>
                   {cert.date && (
@@ -1226,31 +1230,31 @@ function PreviewComponent() {
             />
           )}
           <div className="flex-1 min-w-0">
-            <h1 className="text-lg sm:text-2xl font-bold truncate">
+            <h1 className="text-lg sm:text-2xl font-bold break-words">
               {basics.fullName || 'Seu Nome'}
             </h1>
-            <p className="text-purple-100 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
+            <p className="text-purple-100 text-xs sm:text-sm mt-0.5 sm:mt-1 break-words">
               {basics.headline || 'Sua Profissão'}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-4 mt-3 sm:mt-4 text-xs">
           {basics.email && (
-            <span className="flex items-center gap-1 text-purple-100 truncate">
+            <span className="flex items-center gap-1 text-purple-100 break-words">
               <Mail className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.email}</span>
+              <span className="break-words">{basics.email}</span>
             </span>
           )}
           {basics.phone && (
-            <span className="flex items-center gap-1 text-purple-100 truncate">
+            <span className="flex items-center gap-1 text-purple-100 break-words">
               <Phone className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.phone}</span>
+              <span className="break-words">{basics.phone}</span>
             </span>
           )}
           {basics.location && (
-            <span className="flex items-center gap-1 text-purple-100 truncate">
+            <span className="flex items-center gap-1 text-purple-100 break-words">
               <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{basics.location}</span>
+              <span className="break-words">{basics.location}</span>
             </span>
           )}
         </div>
@@ -1268,14 +1272,18 @@ function PreviewComponent() {
     </div>
   );
 
-  switch (template) {
-    case 'executive': return renderExecutive();
-    case 'tech': return renderTech();
-    case 'compact': return renderCompact();
-    case 'creative': return renderCreative();
-    case 'custom': return renderCustom();
-    default: return renderModern();
-  }
+  const renderedTemplate = (() => {
+    switch (template) {
+      case 'executive': return renderExecutive();
+      case 'tech': return renderTech();
+      case 'compact': return renderCompact();
+      case 'creative': return renderCreative();
+      case 'custom': return renderCustom();
+      default: return renderModern();
+    }
+  })();
+
+  return <div className={`resume-document resume-density-${density} w-full`}>{renderedTemplate}</div>;
 }
 
 export const Preview = memo(PreviewComponent);

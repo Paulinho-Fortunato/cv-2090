@@ -2,7 +2,7 @@
 
 ## ✅ API Key Embutida - Configuração Automática
 
-A API Key da OpenRouter agora está **embutida no código** e configurada automaticamente via variáveis de ambiente da Vercel.
+A API Key da OpenRouter é usada apenas no endpoint serverless `/api/ai` e nunca é incluída no bundle do navegador.
 
 **O usuário NÃO precisa configurar nada!** A IA funciona automaticamente.
 
@@ -23,7 +23,7 @@ A API Key da OpenRouter agora está **embutida no código** e configurada automa
 2. Selecione seu projeto
 3. Vá em **Settings** → **Environment Variables**
 4. Adicione nova variável:
-   - **Name**: `VITE_OPENROUTER_API_KEY`
+   - **Name**: `OPENROUTER_API_KEY`
    - **Value**: `sk-or-v1-sua-chave-aqui`
    - **Environment**: Production, Preview, Development
 5. Clique em **Save**
@@ -44,15 +44,14 @@ A API Key da OpenRouter agora está **embutida no código** e configurada automa
 ### Obrigatórias
 
 ```bash
-VITE_OPENROUTER_API_KEY=sk-or-v1-sua-chave-aqui
+OPENROUTER_API_KEY=sk-or-v1-sua-chave-aqui
 ```
 
 ### Como Funciona
 
-- A variável é injetada no build pelo Vite
-- Fica disponível via `import.meta.env.VITE_OPENROUTER_API_KEY`
-- É incluída no bundle JavaScript final
-- Usuários não precisam configurar nada
+- A variável fica disponível apenas no ambiente serverless da Vercel
+- O frontend chama `/api/ai` sem receber a chave
+- Configure a variável e faça redeploy após qualquer alteração
 
 ---
 
@@ -129,7 +128,7 @@ Se precisar de mais segurança, considere:
 
 **Solução**:
 1. Vá em Settings → Environment Variables
-2. Adicione `VITE_OPENROUTER_API_KEY`
+2. Adicione `OPENROUTER_API_KEY`
 3. Faça redeploy
 
 ### "Erro na API"
@@ -192,7 +191,7 @@ Se precisar de mais segurança, considere:
 ## ✅ Checklist de Configuração
 
 - [ ] Obter API Key da OpenRouter
-- [ ] Adicionar variável `VITE_OPENROUTER_API_KEY` na Vercel
+- [ ] Adicionar variável `OPENROUTER_API_KEY` na Vercel
 - [ ] Fazer redeploy
 - [ ] Testar funcionalidades de IA
 - [ ] Monitorar uso e custos
